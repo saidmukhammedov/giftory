@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import express from 'express';
 import cors from 'cors';
-import mongoose from 'mongoose';
+import { migrate } from './db.js';
 import authRoutes from './routes/auth.js';
 import wishlistRoutes from './routes/wishlists.js';
 import itemRoutes from './routes/items.js';
@@ -23,18 +23,17 @@ if (fs.existsSync(dist)) {
 }
 
 app.use((err, _req, res, _next) => {
-  if (err.name === 'CastError') return res.status(404).json({ message: 'Not found' });
-  if (err.name === 'ValidationError') return res.status(400).json({ message: Object.values(err.errors)[0].message });
+  if (err.code === '22P02') return res.status(404).json({ message: 'Not found' }); // malformed id
+  if (err.code === '23514' || err.code === '22007') return res.status(400).json({ message: 'Check the values you entered' });
   if (!err.status) console.error(err);
   res.status(err.status || 500).json({ message: err.status ? err.message : 'Something went wrong on our side' });
 });
 
 const port = process.env.PORT || 5000;
-mongoose
-  .connect(process.env.MONGO_URI)
+migrate()
   .then(() => app.listen(port, () => console.log(`Giftory API on http://localhost:${port}`)))
   .catch((e) => {
-    console.error('MongoDB connection failed:', e.message);
+    console.error('Database setup failed:', e.message);
     process.exit(1);
   });
 

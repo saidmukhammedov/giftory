@@ -2,18 +2,19 @@
 
 Shared wishlists where friends reserve gifts in secret. Make a list, share one link, and each gift can be picked once. The owner sees that a gift was picked, never what or who.
 
-**Stack:** React 19 + Vite + Tailwind 4 + TanStack Query · Node + Express 5 + MongoDB (Mongoose) · JWT auth
+**Stack:** React 19 + Vite + Tailwind 4 + TanStack Query · Node + Express 5 + PostgreSQL on Neon (plain SQL with `pg`) · JWT auth
 
 ## Run it locally
 
-You need Node 20+ and MongoDB (local, or a free MongoDB Atlas cluster).
+You need Node 20+ and a Postgres database. A free [Neon](https://neon.tech) project works: copy its pooled connection string.
 
 ```bash
 # 1. API
 cd server
-cp .env.example .env      # set MONGO_URI and JWT_SECRET
+cp .env.example .env      # set DATABASE_URL and JWT_SECRET
 npm install
-npm run dev               # http://localhost:5000
+npm run dev               # http://localhost:5000, creates the tables on first start
+npm test                  # 30 API checks against an in-memory Postgres
 
 # 2. Web app (second terminal)
 cd client
@@ -23,10 +24,12 @@ npm run dev               # http://localhost:5173, /api is proxied to :5000
 
 ## How the secret works
 
-- `Item.reservedBy` is stored but **never sent** to any client (`serializeItems` in `server/src/routes/wishlists.js`).
+- `items.reserved_by` is stored but **never sent** to any client (`serializeItems` in `server/src/routes/wishlists.js`).
 - Friends get `isReserved` and `reservedByMe`. The owner gets only `isReserved`, and the UI hides the name of a picked item behind the frosted wrap.
-- Reserving is one atomic query (`{ reservedBy: null }` → set), so two friends can't grab the same gift.
-- Group gifts use an atomic `$inc` that refuses to go past the price.
+- Reserving is one atomic `UPDATE … WHERE reserved_by IS NULL`, so two friends can't grab the same gift (the test suite races two requests to prove it).
+- Chipping in is one statement that raises the total only if it stays within the price, and records the contribution in the same step.
+
+The schema lives in `server/src/schema.sql` and is applied on every start (`CREATE TABLE IF NOT EXISTS`).
 
 ## API
 
@@ -49,6 +52,7 @@ npm run dev               # http://localhost:5173, /api is proxied to :5000
 
 - **One service:** run `npm run build` in `client`, then `npm start` in `server`. Express serves `client/dist` when it exists.
 - **Split:** client on Vercel with `VITE_API_URL=https://your-api/api`, server on Render with `CLIENT_URL` set to the Vercel URL.
+- Set `DATABASE_URL` (Neon pooled string) and `JWT_SECRET` on the server.
 
 ## Next up
 

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
-import User from '../models/User.js';
+import { one } from '../db.js';
 import { requireAuth, signToken } from '../middleware/auth.js';
 
 const router = Router();
@@ -9,25 +9,32 @@ router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
   if (!name?.trim() || !email?.trim()) return res.status(400).json({ message: 'Enter your name and email' });
   if (!password || password.length < 8) return res.status(400).json({ message: 'Password needs at least 8 characters' });
-  if (await User.exists({ email: email.toLowerCase() })) return res.status(409).json({ message: 'This email already has an account. Log in instead.' });
 
-  const user = await User.create({ name, email, passwordHash: await bcrypt.hash(password, 10) });
-  res.status(201).json({ token: signToken(user._id), user: user.toPublic() });
+  try {
+    const user = await one(
+      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email',
+      [name.trim(), email.trim().toLowerCase(), await bcrypt.hash(password, 10)]
+    );
+    res.status(201).json({ token: signToken(user.id), user });
+  } catch (e) {
+    if (e.code === '23505') return res.status(409).json({ message: 'This email already has an account. Log in instead.' });
+    throw e;
+  }
 });
 
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email: email?.toLowerCase() }).select('+passwordHash');
-  if (!user || !(await bcrypt.compare(password || '', user.passwordHash))) {
+  const user = await one('SELECT id, name, email, password_hash FROM users WHERE email = $1', [req.body.email?.trim().toLowerCase()]);
+  if (!user || !(await bcrypt.compare(req.body.password || '', user.password_hash))) {
     return res.status(401).json({ message: 'Wrong email or password' });
   }
-  res.json({ token: signToken(user._id), user: user.toPublic() });
+  const { password_hash, ...publicUser } = user;
+  res.json({ token: signToken(user.id), user: publicUser });
 });
 
 router.get('/me', requireAuth, async (req, res) => {
-  const user = await User.findById(req.userId);
+  const user = await one('SELECT id, name, email FROM users WHERE id = $1', [req.userId]);
   if (!user) return res.status(404).json({ message: 'Account not found' });
-  res.json({ user: user.toPublic() });
+  res.json({ user });
 });
 
 export default router;

@@ -1,98 +1,109 @@
+import crypto from 'node:crypto';
 import { Router } from 'express';
-import mongoose from 'mongoose';
-import Wishlist from '../models/Wishlist.js';
-import Item from '../models/Item.js';
-import Contribution from '../models/Contribution.js';
-import User from '../models/User.js';
+import { query, one, updates } from '../db.js';
 import { requireAuth, optionalAuth } from '../middleware/auth.js';
 
 const router = Router();
-const pick = (o, keys) => Object.fromEntries(keys.filter((k) => o[k] !== undefined).map((k) => [k, o[k]]));
-const LIST_FIELDS = ['title', 'occasion', 'eventDate', 'note'];
-const ITEM_FIELDS = ['name', 'link', 'price', 'image', 'note', 'priority', 'isGroupGift'];
+export const fail = (status, message) => Object.assign(new Error(message), { status });
 
-// The secret: nobody ever receives reservedBy or contributor ids.
+const LIST_COLUMNS = { title: 'title', occasion: 'occasion', eventDate: 'event_date', note: 'note' };
+export const ITEM_COLUMNS = { name: 'name', link: 'link', price: 'price', image: 'image', note: 'note', priority: 'priority', isGroupGift: 'is_group_gift' };
+
+const toList = (w) => ({ id: w.id, title: w.title, occasion: w.occasion, eventDate: w.event_date, note: w.note, slug: w.slug, createdAt: w.created_at });
+
+// The secret: reserved_by and contributor ids never leave the server.
 // Owners learn only that an item is taken; friends also learn whether it was them.
 export async function serializeItems(items, userId) {
-  const groupIds = items.filter((i) => i.isGroupGift).map((i) => i._id);
-  const me = userId ? new mongoose.Types.ObjectId(String(userId)) : null;
-  const stats = await Contribution.aggregate([
-    { $match: { item: { $in: groupIds } } },
-    { $group: { _id: '$item', users: { $addToSet: '$user' }, mine: { $sum: { $cond: [{ $eq: ['$user', me] }, '$amount', 0] } } } },
-  ]);
-  const byItem = Object.fromEntries(stats.map((s) => [String(s._id), s]));
+  const groupIds = items.filter((i) => i.is_group_gift).map((i) => i.id);
+  const stats = groupIds.length
+    ? await query(
+        `SELECT item_id, count(DISTINCT user_id)::int AS contributors,
+                coalesce(sum(amount) FILTER (WHERE user_id = $2::uuid), 0)::bigint AS mine
+         FROM contributions WHERE item_id = ANY($1::uuid[]) GROUP BY item_id`,
+        [groupIds, userId || null]
+      )
+    : [];
+  const byItem = Object.fromEntries(stats.map((s) => [s.item_id, s]));
 
   return items.map((i) => ({
-    id: i._id,
+    id: i.id,
     name: i.name,
     link: i.link,
     price: i.price,
     image: i.image,
     note: i.note,
     priority: i.priority,
-    isGroupGift: i.isGroupGift,
-    isReserved: !!i.reservedBy,
-    reservedByMe: !!userId && String(i.reservedBy) === String(userId),
+    isGroupGift: i.is_group_gift,
+    isReserved: !!i.reserved_by,
+    reservedByMe: !!userId && i.reserved_by === userId,
     funded: i.funded,
-    contributors: byItem[String(i._id)]?.users.length || 0,
-    myContribution: byItem[String(i._id)]?.mine || 0,
+    contributors: byItem[i.id]?.contributors || 0,
+    myContribution: byItem[i.id]?.mine || 0,
   }));
 }
 
 export async function ownedList(id, userId) {
-  const list = await Wishlist.findById(id);
-  if (!list) throw Object.assign(new Error('Wishlist not found'), { status: 404 });
-  if (String(list.owner) !== String(userId)) throw Object.assign(new Error('Only the owner can do this'), { status: 403 });
+  const list = await one('SELECT * FROM wishlists WHERE id = $1', [id]);
+  if (!list) throw fail(404, 'Wishlist not found');
+  if (list.owner_id !== userId) throw fail(403, 'Only the owner can do this');
   return list;
 }
 
 router.get('/mine', requireAuth, async (req, res) => {
-  const lists = await Wishlist.find({ owner: req.userId }).sort('-createdAt').lean();
-  const counts = await Item.aggregate([
-    { $match: { wishlist: { $in: lists.map((l) => l._id) } } },
-    { $group: { _id: '$wishlist', total: { $sum: 1 }, reserved: { $sum: { $cond: [{ $ne: ['$reservedBy', null] }, 1, 0] } } } },
-  ]);
-  const byList = Object.fromEntries(counts.map((c) => [String(c._id), c]));
-  res.json(lists.map((l) => ({ ...l, id: l._id, total: byList[l._id]?.total || 0, reserved: byList[l._id]?.reserved || 0 })));
+  const rows = await query(
+    `SELECT w.*, count(i.id)::int AS total, count(i.reserved_by)::int AS reserved
+     FROM wishlists w LEFT JOIN items i ON i.wishlist_id = w.id
+     WHERE w.owner_id = $1 GROUP BY w.id ORDER BY w.created_at DESC`,
+    [req.userId]
+  );
+  res.json(rows.map((w) => ({ ...toList(w), total: w.total, reserved: w.reserved })));
 });
 
 router.post('/', requireAuth, async (req, res) => {
-  if (!req.body.title?.trim()) return res.status(400).json({ message: 'Give your wishlist a name' });
-  const list = await Wishlist.create({ ...pick(req.body, LIST_FIELDS), owner: req.userId });
-  res.status(201).json(list);
+  const { title, occasion, eventDate, note } = req.body;
+  if (!title?.trim()) throw fail(400, 'Give your wishlist a name');
+  const list = await one(
+    'INSERT INTO wishlists (owner_id, title, occasion, event_date, note, slug) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+    [req.userId, title.trim(), occasion || null, eventDate || null, note || null, crypto.randomBytes(6).toString('base64url')]
+  );
+  res.status(201).json(toList(list));
 });
 
 router.get('/:slug', optionalAuth, async (req, res) => {
-  const list = await Wishlist.findOne({ slug: req.params.slug }).lean();
-  if (!list) return res.status(404).json({ message: 'This wishlist does not exist or was deleted' });
-  const [owner, items] = await Promise.all([User.findById(list.owner), Item.find({ wishlist: list._id }).sort('createdAt')]);
-  const isOwner = String(list.owner) === String(req.userId);
+  const list = await one('SELECT w.*, u.name AS owner_name FROM wishlists w JOIN users u ON u.id = w.owner_id WHERE w.slug = $1', [req.params.slug]);
+  if (!list) throw fail(404, 'This wishlist does not exist or was deleted');
+  const isOwner = list.owner_id === req.userId;
+  const items = await query('SELECT * FROM items WHERE wishlist_id = $1 ORDER BY created_at', [list.id]);
   res.json({
-    wishlist: { ...list, id: list._id, owner: { name: owner?.name } },
+    wishlist: { ...toList(list), owner: { name: list.owner_name } },
     isOwner,
     items: await serializeItems(items, isOwner ? null : req.userId),
   });
 });
 
 router.patch('/:id', requireAuth, async (req, res) => {
-  const list = await ownedList(req.params.id, req.userId);
-  Object.assign(list, pick(req.body, LIST_FIELDS));
-  res.json(await list.save());
+  await ownedList(req.params.id, req.userId);
+  const { sql, values } = updates(req.body, LIST_COLUMNS, 2);
+  if (!sql) throw fail(400, 'Nothing to update');
+  res.json(toList(await one(`UPDATE wishlists SET ${sql} WHERE id = $1 RETURNING *`, [req.params.id, ...values])));
 });
 
 router.delete('/:id', requireAuth, async (req, res) => {
-  const list = await ownedList(req.params.id, req.userId);
-  const itemIds = (await Item.find({ wishlist: list._id }, '_id')).map((i) => i._id);
-  await Promise.all([Contribution.deleteMany({ item: { $in: itemIds } }), Item.deleteMany({ wishlist: list._id }), list.deleteOne()]);
+  await ownedList(req.params.id, req.userId);
+  await query('DELETE FROM wishlists WHERE id = $1', [req.params.id]); // items and contributions cascade
   res.status(204).end();
 });
 
 router.post('/:id/items', requireAuth, async (req, res) => {
-  const list = await ownedList(req.params.id, req.userId);
-  const { name, price } = req.body;
-  if (!name?.trim()) return res.status(400).json({ message: 'Give the wish a name' });
-  if (!(Number(price) >= 0)) return res.status(400).json({ message: 'Enter a price in soʻm' });
-  const item = await Item.create({ ...pick(req.body, ITEM_FIELDS), wishlist: list._id });
+  await ownedList(req.params.id, req.userId);
+  const { name, price, link, image, note, priority = 'medium', isGroupGift = false } = req.body;
+  if (!name?.trim()) throw fail(400, 'Give the wish a name');
+  if (!(Number(price) >= 0)) throw fail(400, 'Enter a price in soʻm');
+  const item = await one(
+    `INSERT INTO items (wishlist_id, name, price, link, image, note, priority, is_group_gift)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+    [req.params.id, name.trim(), Math.round(Number(price)), link || null, image || null, note || null, priority, !!isGroupGift]
+  );
   res.status(201).json((await serializeItems([item], null))[0]);
 });
 
