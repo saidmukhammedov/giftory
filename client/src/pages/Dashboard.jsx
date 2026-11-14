@@ -7,6 +7,7 @@ import { useAuth } from '../auth';
 import { useT } from '../i18n';
 import { Page, Header } from '../components/Layout';
 import { Plus } from '../components/Icons';
+import { BirthdayBanner, isBirthdayToday } from '../components/Birthday';
 
 // Stored in English, shown in the current language
 const OCCASIONS = ['Birthday', 'Wedding', 'New home', 'New baby', 'Graduation', 'Just because'];
@@ -63,7 +64,7 @@ export default function Dashboard() {
   return (
     <Page shapes={[['circle', 480, { right: -140, top: 160 }], ['square', 300, { left: -60, top: 760, rotate: '-10deg' }]]}>
       <Header />
-      <main className="mx-auto flex max-w-[1376px] flex-col gap-8 px-4 pb-24 pt-12 sm:px-8">
+      <main id="main" tabIndex={-1} className="mx-auto flex max-w-[1376px] flex-col gap-8 px-4 pb-24 pt-12 outline-none sm:px-8">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <p className="text-lg text-mute">{t('hi', { name: user.name })}</p>
@@ -72,6 +73,7 @@ export default function Dashboard() {
           {!creating && <button className="btn btn-primary" onClick={() => setCreating(true)}><Plus size={18} /> {t('newList')}</button>}
         </div>
 
+        {lists?.filter(isBirthdayToday).slice(0, 1).map((l) => <BirthdayBanner key={l.id} name={user.name.split(' ')[0]} picked={l.reserved} />)}
         {tgError && <p role="alert" className="bg-ink p-4 font-semibold text-paper">{t(tgError)}</p>}
         {creating && <NewListForm onCancel={() => setCreating(false)} />}
         {isError && <p role="alert" className="bg-ink p-4 font-semibold text-paper">{t.error(error)}</p>}

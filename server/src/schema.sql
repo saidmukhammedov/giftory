@@ -62,3 +62,6 @@ ALTER TABLE users ALTER COLUMN email DROP NOT NULL;
 ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_id text UNIQUE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url text;
+
+-- When the user agreed to the Terms and Privacy Policy (sign-up checkbox, or continuing with Telegram)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at timestamptz;

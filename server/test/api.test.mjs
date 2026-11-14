@@ -51,9 +51,10 @@ async function call(method, path, body, token) {
   const text = await r.text();
   return { status: r.status, data: text ? JSON.parse(text) : null, raw: text };
 }
-const reg = async (n) => (await call('POST', '/auth/register', { name: n, email: n + '@t.uz', password: 'password1' })).data.token;
+const reg = async (n) => (await call('POST', '/auth/register', { name: n, email: n + '@t.uz', password: 'password1', acceptTerms: true })).data.token;
 const owner = await reg('madina'), a = await reg('jasur'), b = await reg('dilnoza');
-ok((await call('POST', '/auth/register', { name: 'x', email: 'MADINA@t.uz', password: 'password1' })).status === 409, 'duplicate email rejected');
+ok((await call('POST', '/auth/register', { name: 'x', email: 'MADINA@t.uz', password: 'password1', acceptTerms: true })).status === 409, 'duplicate email rejected');
+ok((await call('POST', '/auth/register', { name: 'y', email: 'y@t.uz', password: 'password1' })).status === 400, 'sign-up without accepting the terms is refused');
 ok((await call('POST', '/auth/login', { email: 'madina@t.uz', password: 'nope' })).status === 401, 'wrong password rejected');
 ok((await call('POST', '/auth/login', { email: 'Madina@t.uz', password: 'password1' })).status === 200, 'login works, email case-insensitive');
 
@@ -155,6 +156,28 @@ const { ticket: t2 } = (await call('POST', '/auth/telegram/link', null, emailUse
 ok((await telegramLogin({ ticket: t2 })).loc === '/dashboard?error=telegram_taken', "can't connect a Telegram account that another account already uses");
 ok((await call('POST', '/auth/telegram/link')).status === 401, 'connecting requires being logged in');
 tgServer.close();
+
+// Profile
+ok((await call('PATCH', '/auth/me', { name: 'Madina Y.', email: 'madina.new@t.uz' }, owner)).data.user.email === 'madina.new@t.uz', 'profile: name and email updated');
+ok((await call('PATCH', '/auth/me', { name: 'x', email: 'jasur@t.uz' }, owner)).status === 409, "profile: can't take another account's email");
+ok((await call('PATCH', '/auth/me', { name: 'x', email: '' }, owner)).status === 400, "profile: email can't be removed while it's the login");
+ok((await call('PUT', '/auth/password', { currentPassword: 'wrong', newPassword: 'newpassword1' }, owner)).status === 400, 'password: wrong current password refused');
+ok((await call('PUT', '/auth/password', { currentPassword: 'password1', newPassword: 'newpassword1' }, owner)).status === 200, 'password: changed');
+ok((await call('POST', '/auth/login', { email: 'madina.new@t.uz', password: 'newpassword1' })).status === 200, 'password: new one works');
+ok((await call('PUT', '/auth/password', { newPassword: 'abcdefgh1' }, s1.token)).status === 400, 'Telegram-only account must add an email before a password');
+await call('PATCH', '/auth/me', { name: 'Madina Telegram', email: 'tg.madina@t.uz' }, s1.token);
+ok((await call('DELETE', '/auth/telegram', null, s1.token)).status === 400, "can't disconnect Telegram without a password");
+ok((await call('PUT', '/auth/password', { newPassword: 'abcdefgh1' }, s1.token)).data.user.hasPassword, 'Telegram account sets a password');
+ok((await call('DELETE', '/auth/telegram', null, s1.token)).data.user.telegram === false, 'then disconnects Telegram');
+
+// Delete account
+const gone = await reg('temp');
+const gl = (await call('POST', '/wishlists', { title: 'Temp list' }, gone)).data;
+const gi = (await call('POST', `/wishlists/${gl.id}/items`, { name: 'Thing', price: 10 }, gone)).data;
+await call('POST', `/items/${gi.id}/reserve`, null, a);
+ok((await call('DELETE', '/auth/me', null, gone)).status === 204, 'account deleted');
+ok((await call('GET', '/auth/me', null, gone)).status === 404 && (await call('GET', `/wishlists/${gl.slug}`)).status === 404, 'its lists are gone too');
+ok((await call('POST', '/auth/login', { email: 'temp@t.uz', password: 'password1' })).status === 401, "deleted account can't log in");
 
 console.log(`\n${pass} passed, ${failN} failed`);
 api.kill();

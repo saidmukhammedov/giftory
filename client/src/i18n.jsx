@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, Fragment, useContext, useEffect, useState } from 'react';
 import { errorText } from './api';
 
 // Plural forms: en [one, other], ru [one, few, many]. Use {n} inside.
@@ -11,6 +11,32 @@ const en = {
   continueTelegram: 'Continue with Telegram', orEmail: 'or with email', signingIn: 'Signing you in…', connectTelegram: 'Connect Telegram',
   tgError: "Telegram login didn't finish. Try again.", tgOff: "Telegram login isn't set up yet.", tgTaken: 'That Telegram account is already linked to another Giftory account.',
   menu: 'Menu', closeMenu: 'Close menu', theme: 'Theme', darkName: 'Dark', lightName: 'Light', logOut: 'Log out', account: 'Account menu',
+
+  // profile
+  profile: 'Profile', profileTitle: 'Your profile', profileSub: 'We only keep what Giftory needs to work.',
+  details: 'Name and email', detailsHint: 'Your name is shown on your wishlists.', emailHint: 'Used only to log in. We never send marketing emails.',
+  saveChanges: 'Save changes', saving: 'Saving…', saved: 'Saved',
+  passwordTitle: 'Password', currentPassword: 'Current password', newPassword: 'New password', updatePassword: 'Update password', setPassword: 'Set a password',
+  passwordNeedsEmail: 'Add an email above to also log in with a password.', passwordUpdated: 'Password updated',
+  telegramTitle: 'Telegram', telegramOn: 'Connected. You can log in with Telegram.', telegramOffText: 'Not connected. Connect it to log in with one tap.',
+  disconnectTelegram: 'Disconnect Telegram', disconnectNeedsPassword: 'To disconnect, first add an email and password so you can still log in.',
+  appearance: 'Language and theme',
+  dataTitle: 'What we store', dataText: 'We store your name, email or Telegram ID, your password as a secure hash, and the lists, wishes and photos you add. No tracking, no ads.',
+  readPrivacy: 'Read the Privacy Policy',
+  deleteTitle: 'Delete account', deleteText: 'This removes your wishlists, wishes and photos. Gifts you reserved for friends are released. This can’t be undone.',
+  deleteAccount: 'Delete my account', deleteConfirm: 'Delete your account for good?', deleteYes: 'Yes, delete my account', deleteNo: 'Keep my account', deleting: 'Deleting…',
+  // birthday
+  happyBirthday: 'Happy birthday, {name}!', birthdayText: 'Today’s the day. Your friends picked {n} of your wishes. Enjoy every surprise.',
+  birthdayTextNone: 'Today’s the day. Have a wonderful birthday.',
+  // legal and consent
+  privacy: 'Privacy Policy', terms: 'Terms & Conditions', cookies: 'Cookie Policy', lastUpdated: 'Last updated: {date}',
+  agreeTerms: 'I agree to the {terms} and {privacy}.', agreeTelegram: 'By continuing with Telegram, you agree to the {terms} and {privacy}.',
+  termsShort: 'Terms', privacyShort: 'Privacy Policy',
+  cookieNotice: 'Giftory only uses essential storage to keep you logged in and remember your language and theme. No tracking, no ads.',
+  cookieOk: 'Got it', cookieMore: 'Cookie Policy',
+  skipToContent: 'Skip to main content',
+  useImage: 'Use this image', removePhoto: 'Remove photo', showPassword: 'Show password', hidePassword: 'Hide password', addWishSubmit: 'Add wish',
+  contactLabel: 'Contact',
   // landing
   heroTitle: 'Wish out loud. Get surprised anyway.',
   heroSub: 'Make a wishlist, share one link, and friends reserve gifts in secret. Nobody doubles up. You never see who picked what.',
@@ -76,6 +102,29 @@ const ru = {
   continueTelegram: 'Войти через Telegram', orEmail: 'или по почте', signingIn: 'Входим…', connectTelegram: 'Подключить Telegram',
   tgError: 'Вход через Telegram не завершён. Попробуйте ещё раз.', tgOff: 'Вход через Telegram пока не настроен.', tgTaken: 'Этот Telegram уже привязан к другому аккаунту Giftory.',
   menu: 'Меню', closeMenu: 'Закрыть меню', theme: 'Тема', darkName: 'Тёмная', lightName: 'Светлая', logOut: 'Выйти', account: 'Меню аккаунта',
+
+  profile: 'Профиль', profileTitle: 'Ваш профиль', profileSub: 'Мы храним только то, что нужно для работы Giftory.',
+  details: 'Имя и почта', detailsHint: 'Имя показывается в ваших вишлистах.', emailHint: 'Только для входа. Мы не присылаем рекламных писем.',
+  saveChanges: 'Сохранить', saving: 'Сохраняем…', saved: 'Сохранено',
+  passwordTitle: 'Пароль', currentPassword: 'Текущий пароль', newPassword: 'Новый пароль', updatePassword: 'Сменить пароль', setPassword: 'Задать пароль',
+  passwordNeedsEmail: 'Добавьте почту выше, чтобы входить и по паролю.', passwordUpdated: 'Пароль обновлён',
+  telegramTitle: 'Telegram', telegramOn: 'Подключён. Можно входить через Telegram.', telegramOffText: 'Не подключён. Подключите, чтобы входить в одно касание.',
+  disconnectTelegram: 'Отключить Telegram', disconnectNeedsPassword: 'Чтобы отключить, сначала добавьте почту и пароль, иначе вы не сможете войти.',
+  appearance: 'Язык и тема',
+  dataTitle: 'Что мы храним', dataText: 'Мы храним ваше имя, почту или Telegram ID, пароль в виде защищённого хеша и списки, желания и фото, которые вы добавили. Без слежки и рекламы.',
+  readPrivacy: 'Политика конфиденциальности',
+  deleteTitle: 'Удалить аккаунт', deleteText: 'Будут удалены ваши вишлисты, желания и фото. Подарки, которые вы забронировали для друзей, освободятся. Отменить нельзя.',
+  deleteAccount: 'Удалить мой аккаунт', deleteConfirm: 'Удалить аккаунт навсегда?', deleteYes: 'Да, удалить аккаунт', deleteNo: 'Оставить аккаунт', deleting: 'Удаляем…',
+  happyBirthday: 'С днём рождения, {name}!', birthdayText: 'Сегодня ваш день. Друзья выбрали {n} из ваших желаний. Наслаждайтесь сюрпризами.',
+  birthdayTextNone: 'Сегодня ваш день. Прекрасного дня рождения!',
+  privacy: 'Политика конфиденциальности', terms: 'Условия использования', cookies: 'Политика cookie', lastUpdated: 'Обновлено: {date}',
+  agreeTerms: 'Я принимаю {terms} и {privacy}.', agreeTelegram: 'Продолжая через Telegram, вы принимаете {terms} и {privacy}.',
+  termsShort: 'Условия', privacyShort: 'Политику конфиденциальности',
+  cookieNotice: 'Giftory использует только необходимое хранилище, чтобы вы оставались в аккаунте, и чтобы запомнить язык и тему. Без слежки и рекламы.',
+  cookieOk: 'Понятно', cookieMore: 'Политика cookie',
+  skipToContent: 'Перейти к содержимому',
+  useImage: 'Использовать', removePhoto: 'Убрать фото', showPassword: 'Показать пароль', hidePassword: 'Скрыть пароль', addWishSubmit: 'Добавить желание',
+  contactLabel: 'Контакты',
   heroTitle: 'Мечтайте вслух. Удивляйтесь всё равно.',
   heroSub: 'Составьте список желаний, отправьте одну ссылку, и друзья тайно выберут подарки. Никаких повторов. Вы не узнаете, кто что выбрал.',
   demoAria: 'Друг видит фотоаппарат с пометкой «забронировано вами». Вы видите тот же ярлык под плёнкой с лентой.',
@@ -153,6 +202,13 @@ const ru = {
     'Could not reach Giftory. Check your connection and try again.': 'Не удаётся связаться с Giftory. Проверьте интернет и попробуйте снова.',
     'Choose a photo file': 'Выберите файл с фото',
     "Couldn't read that photo. Try a JPG or PNG.": 'Не удалось прочитать фото. Попробуйте JPG или PNG.',
+    'Please accept the Terms and Privacy Policy to continue': 'Чтобы продолжить, примите Условия и Политику конфиденциальности',
+    'Enter your name': 'Введите имя',
+    'You log in with email, so it can’t be empty': 'Вы входите по почте, поэтому её нельзя оставить пустой',
+    'Another account already uses this email': 'Эта почта уже используется другим аккаунтом',
+    'Add an email first, so you can log in with it': 'Сначала добавьте почту, чтобы входить с ней',
+    'Your current password is wrong': 'Текущий пароль неверный',
+    'Set an email and password first, or you would lose access to your account': 'Сначала задайте почту и пароль, иначе вы потеряете доступ к аккаунту',
   },
 };
 
@@ -185,6 +241,11 @@ export function PrefsProvider({ children }) {
     const v = dict[key] ?? en[key] ?? key;
     return fill(Array.isArray(v) ? v[pluralIndex(lang, vars.n)] : v, vars);
   };
+  // Sentence with React nodes (links) dropped into {placeholders}
+  t.rich = (key, nodes) => (dict[key] ?? en[key]).split(/(\{\w+\})/).map((part, i) => {
+    const m = part.match(/^\{(\w+)\}$/);
+    return <Fragment key={i}>{m ? nodes[m[1]] : part}</Fragment>;
+  });
   t.occasion = (o) => dict.occasions[o] || o;
   t.prio = (p) => dict.prio[p];
   t.error = (e) => { const msg = e?.isAxiosError || !e?.message ? errorText(e) : e.message; return dict.errors[msg] || msg; };

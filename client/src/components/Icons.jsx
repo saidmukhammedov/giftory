@@ -12,13 +12,13 @@ export const Logo = () => (
   </svg>
 );
 
-export const Bow = ({ width = 72 }) => (
+export const Bow = ({ width = 72, fill = '#FF4D00' }) => (
   <svg width={width} height={width * 0.62} viewBox="0 0 64 40" aria-hidden="true">
     <g className="stroke-ink" strokeWidth="2">
-      <path d="M32 20C20 3 5 6 7 18c2 12 16 8 25 2z" fill="#FF4D00" />
-      <path d="M32 20C44 3 59 6 57 18c-2 12-16 8-25 2z" fill="#FF4D00" />
+      <path d="M32 20C20 3 5 6 7 18c2 12 16 8 25 2z" fill={fill} />
+      <path d="M32 20C44 3 59 6 57 18c-2 12-16 8-25 2z" fill={fill} />
       <path d="M29 22 22 37M35 22l7 15" />
-      <circle cx="32" cy="20" r="5.5" fill="#FF4D00" />
+      <circle cx="32" cy="20" r="5.5" fill={fill} />
     </g>
   </svg>
 );

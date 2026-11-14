@@ -7,6 +7,7 @@ import { useT } from '../i18n';
 import { Page, Header, Footer } from '../components/Layout';
 import { Tag, ItemTile } from '../components/Tag';
 import AddItemModal from '../components/AddItemModal';
+import { BirthdayBanner, isBirthdayToday } from '../components/Birthday';
 import { Check, External, Lock, Plus, Send, Trash, Back } from '../components/Icons';
 import { som } from '../utils';
 
@@ -30,7 +31,9 @@ export default function Wishlist() {
           <Link to="/" className="btn btn-primary">{t('goHome')}</Link>
         </div>
       )}
-      {data && (data.isOwner ? <OwnerView {...data} /> : <FriendView {...data} />)}
+      <main id="main" tabIndex={-1} className="outline-none">
+        {data && (data.isOwner ? <OwnerView {...data} /> : <FriendView {...data} />)}
+      </main>
       <Footer />
     </Page>
   );
@@ -218,8 +221,9 @@ function OwnerView({ wishlist, items }) {
 
   return (
     <>
-      <div className="mx-auto max-w-[1376px] px-4 pt-10 sm:px-8">
-        <Link to="/dashboard" className="inline-flex items-center gap-1.5 font-semibold no-underline"><Back /> {t('allLists')}</Link>
+      <div className="mx-auto flex max-w-[1376px] flex-col gap-8 px-4 pt-10 sm:px-8">
+        <Link to="/dashboard" className="inline-flex items-center gap-1.5 self-start font-semibold no-underline"><Back /> {t('allLists')}</Link>
+        {isBirthdayToday(wishlist) && <BirthdayBanner name={wishlist.owner.name?.split(' ')[0]} picked={picked} />}
       </div>
       <ListHeader
         wishlist={wishlist}

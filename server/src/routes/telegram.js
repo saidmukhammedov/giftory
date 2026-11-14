@@ -75,7 +75,7 @@ router.get('/callback', async (req, res) => {
       if (!user) return res.redirect('/dashboard?error=telegram_taken');
     } else {
       user = await one(
-        `INSERT INTO users (name, telegram_id, avatar_url) VALUES ($1, $2, $3)
+        `INSERT INTO users (name, telegram_id, avatar_url, terms_accepted_at) VALUES ($1, $2, $3, now())
          ON CONFLICT (telegram_id) DO UPDATE SET avatar_url = coalesce(EXCLUDED.avatar_url, users.avatar_url) RETURNING id`,
         [name, telegramId, tg.picture || null]
       );

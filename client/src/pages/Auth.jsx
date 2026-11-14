@@ -17,7 +17,7 @@ export default function Auth({ mode }) {
   const next = params.get('next') || '/dashboard';
   const tgError = TELEGRAM_ERRORS[params.get('error')];
   const telegram = useTelegramEnabled();
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', acceptTerms: false });
   const [showPw, setShowPw] = useState(false);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
@@ -48,9 +48,12 @@ export default function Auth({ mode }) {
             {tgError && <p role="alert" className="bg-ink p-3 font-semibold text-paper">{t(tgError)}</p>}
             {telegram && (
               <>
-                <a href={telegramLoginUrl(next)} className="btn min-h-14 bg-[#2AABEE] text-black no-underline hover:bg-ink hover:text-paper">
+                <a href={telegramLoginUrl(next)} className="btn min-h-14 bg-[#2AABEE] text-black no-underline hover:bg-ink hover:text-paper" aria-describedby="tg-consent">
                   <Send size={20} /> {t('continueTelegram')}
                 </a>
+                <p id="tg-consent" className="-mt-2 text-sm text-mute">
+                  {t.rich('agreeTelegram', { terms: <Link to="/terms" className="font-semibold text-ink">{t('termsShort')}</Link>, privacy: <Link to="/privacy" className="font-semibold text-ink">{t('privacyShort')}</Link> })}
+                </p>
                 <div className="flex items-center gap-3 text-sm font-semibold text-mute" aria-hidden="true">
                   <span className="h-0.5 flex-1 bg-ink/15" /> {t('orEmail')} <span className="h-0.5 flex-1 bg-ink/15" />
                 </div>
@@ -69,13 +72,19 @@ export default function Auth({ mode }) {
             <label className="flex flex-col gap-2 font-bold">
               {t('password')}
               <span className="relative">
-                <input className="input pr-28 font-normal" type={showPw ? 'text' : 'password'} required minLength={signup ? 8 : undefined} autoComplete={signup ? 'new-password' : 'current-password'} value={form.password} onChange={set('password')} />
-                <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-2 top-1/2 min-h-11 -translate-y-1/2 cursor-pointer px-2 text-sm font-semibold underline">
-                  {t(showPw ? 'hide' : 'show')}
+                <input className="input pr-40 font-normal" type={showPw ? 'text' : 'password'} required minLength={signup ? 8 : undefined} autoComplete={signup ? 'new-password' : 'current-password'} value={form.password} onChange={set('password')} />
+                <button type="button" onClick={() => setShowPw(!showPw)} aria-pressed={showPw} className="absolute right-2 top-1/2 min-h-11 -translate-y-1/2 cursor-pointer px-2 text-sm font-semibold underline">
+                  {t(showPw ? 'hidePassword' : 'showPassword')}
                 </button>
               </span>
               {signup && <span className="text-sm font-normal text-mute">{t('pwHint')}</span>}
             </label>
+            {signup && (
+              <label className="flex cursor-pointer items-start gap-3 text-[15px] leading-snug">
+                <input type="checkbox" required checked={form.acceptTerms} onChange={(e) => setForm({ ...form, acceptTerms: e.target.checked })} className="mt-0.5 size-6 shrink-0 cursor-pointer accent-[var(--color-signal)]" />
+                <span>{t.rich('agreeTerms', { terms: <Link to="/terms" className="font-semibold">{t('termsShort')}</Link>, privacy: <Link to="/privacy" className="font-semibold">{t('privacyShort')}</Link> })}</span>
+              </label>
+            )}
             {submit.isError && <p role="alert" className="bg-ink p-3 font-semibold text-paper">{t.error(submit.error)}</p>}
             <button className="btn btn-primary mt-1 min-h-14" disabled={submit.isPending}>
               {submit.isPending ? t('wait') : t(signup ? 'createAccount' : 'login')}

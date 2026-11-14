@@ -15,6 +15,7 @@ export default function Landing() {
     <Page shapes={[['circle', 600, { right: -110, top: 90 }], ['circle', 520, { right: -120, top: 1800 }]]}>
       <Header />
 
+      <main id="main" tabIndex={-1} className="outline-none">
       <section className="relative mx-auto flex min-h-[820px] max-w-[1376px] flex-col px-4 pb-24 pt-14 sm:px-8">
         <h1 className={`display relative z-10 max-w-[1040px] leading-[.86] lg:max-w-[780px] ${lang === 'ru' ? 'text-[clamp(40px,6vw,90px)]' : 'text-[clamp(52px,8.6vw,128px)]'}`}>{t('heroTitle')}</h1>
 
@@ -107,6 +108,7 @@ export default function Landing() {
         </div>
       </section>
 
+      </main>
       <Footer />
     </Page>
   );

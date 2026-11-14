@@ -13,7 +13,7 @@ export default function Reserved() {
   return (
     <Page shapes={[['circle', 460, { right: -140, top: 140 }], ['square', 280, { left: -60, top: 700, rotate: '10deg' }]]}>
       <Header />
-      <main className="mx-auto flex max-w-[1376px] flex-col gap-8 px-4 pb-24 pt-12 sm:px-8">
+      <main id="main" tabIndex={-1} className="outline-none mx-auto flex max-w-[1376px] flex-col gap-8 px-4 pb-24 pt-12 sm:px-8">
         <div>
           <h1 className="display text-[clamp(40px,5vw,72px)]">{t('reservedTitle')}</h1>
           <p className="mt-3 text-lg text-mute">{t('reservedSub')}</p>

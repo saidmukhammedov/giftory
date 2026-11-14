@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api';
 import { useT } from '../i18n';
@@ -28,10 +28,23 @@ export default function AddItemModal({ list, onClose }) {
   const [dragging, setDragging] = useState(false);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
+  const dialog = useRef(null);
+
+  // Keyboard: focus the first field on open, keep Tab inside the panel, Escape closes,
+  // and focus goes back to the button that opened it.
   useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const opener = document.activeElement;
+    dialog.current?.querySelector('input:not([type=file]):not([hidden]), textarea')?.focus();
+    const onKey = (e) => {
+      if (e.key === 'Escape') return onClose();
+      if (e.key !== 'Tab') return;
+      const items = [...dialog.current.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]):not([hidden]), textarea, label[tabindex]')].filter((el) => el.offsetParent !== null || el.matches('.sr-only'));
+      const first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('keydown', onKey); opener?.focus?.(); };
   }, [onClose]);
 
   const upload = useMutation({
@@ -57,6 +70,7 @@ export default function AddItemModal({ list, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-ink/30" onClick={onClose}>
       <form
+        ref={dialog}
         role="dialog"
         aria-modal="true"
         aria-labelledby="add-title"
@@ -86,7 +100,7 @@ export default function AddItemModal({ list, onClose }) {
                     {t('changePhoto')}
                     <input type="file" accept="image/*" className="sr-only" onChange={pick} />
                   </label>
-                  <button type="button" className="btn btn-outline min-h-11 flex-1 text-sm" onClick={() => setForm({ ...form, image: '' })}>{t('remove')}</button>
+                  <button type="button" className="btn btn-outline min-h-11 flex-1 text-sm" onClick={() => setForm({ ...form, image: '' })}>{t('removePhoto')}</button>
                 </div>
               </div>
             ) : (
@@ -108,7 +122,7 @@ export default function AddItemModal({ list, onClose }) {
             {!form.image && (linkMode ? (
               <div className="flex gap-2">
                 <input className="input min-w-0 flex-1" type="url" autoFocus value={imageLink} onChange={(e) => setImageLink(e.target.value)} placeholder="https://…/photo.jpg" aria-label={t('imageLink')} />
-                <button type="button" className="btn btn-primary px-5" disabled={!imageLink} onClick={() => setForm({ ...form, image: imageLink })}>{t('use')}</button>
+                <button type="button" className="btn btn-primary px-5" disabled={!imageLink} onClick={() => setForm({ ...form, image: imageLink })}>{t('useImage')}</button>
               </div>
             ) : (
               <button type="button" className="min-h-11 self-start text-sm font-semibold underline" onClick={() => setLinkMode(true)}>{t('pasteLink')}</button>
@@ -144,11 +158,15 @@ export default function AddItemModal({ list, onClose }) {
 
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-2 font-bold">{t('howMuch')}</legend>
+            {/* Real radio buttons: arrow keys move between options */}
             <div className="flex gap-1 bg-field p-1 shadow-[inset_0_0_0_2px_var(--color-ink)]">
               {PRIORITIES.map((v) => (
-                <button key={v} type="button" aria-pressed={form.priority === v} onClick={() => setForm({ ...form, priority: v })} className="chip flex-1 px-2 text-sm shadow-none">
-                  {t.prio(v)}
-                </button>
+                <label key={v} className="flex-1 cursor-pointer">
+                  <input type="radio" name="priority" value={v} checked={form.priority === v} onChange={() => setForm({ ...form, priority: v })} className="peer sr-only" />
+                  <span className="flex min-h-11 items-center justify-center px-2 text-center text-sm font-semibold peer-checked:bg-ink peer-checked:text-paper peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-signal hover:bg-paper peer-checked:hover:bg-ink">
+                    {t.prio(v)}
+                  </span>
+                </label>
               ))}
             </div>
           </fieldset>
@@ -175,7 +193,7 @@ export default function AddItemModal({ list, onClose }) {
 
         <div className="flex justify-end gap-3 border-t-2 border-ink px-7 py-5">
           <button type="button" onClick={onClose} className="btn btn-outline">{t('cancel')}</button>
-          <button className="btn btn-primary" disabled={add.isPending || upload.isPending}>{t(add.isPending ? 'adding' : 'addToList')}</button>
+          <button className="btn btn-primary" disabled={add.isPending || upload.isPending}>{t(add.isPending ? 'adding' : 'addWishSubmit')}</button>
         </div>
       </form>
     </div>
