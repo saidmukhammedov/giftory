@@ -30,13 +30,19 @@ export default function AddItemModal({ list, onClose }) {
 
   const dialog = useRef(null);
 
+  // Escape and a click outside ask before throwing away what was typed. The Close and Cancel buttons don't ask.
+  const blank = { name: '', price: '', link: '', image: '', note: '', priority: 'medium', isGroupGift: false };
+  const dirty = Object.keys(blank).some((k) => form[k] !== blank[k]);
+  const dismiss = useRef(onClose);
+  dismiss.current = () => (!dirty || confirm(t('discardWish'))) && onClose();
+
   // Keyboard: focus the first field on open, keep Tab inside the panel, Escape closes,
   // and focus goes back to the button that opened it.
   useEffect(() => {
     const opener = document.activeElement;
     dialog.current?.querySelector('input:not([type=file]):not([hidden]), textarea')?.focus();
     const onKey = (e) => {
-      if (e.key === 'Escape') return onClose();
+      if (e.key === 'Escape') return dismiss.current();
       if (e.key !== 'Tab') return;
       const items = [...dialog.current.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]):not([hidden]), textarea, label[tabindex]')].filter((el) => el.offsetParent !== null || el.matches('.sr-only'));
       const first = items[0], last = items[items.length - 1];
@@ -45,7 +51,7 @@ export default function AddItemModal({ list, onClose }) {
     };
     document.addEventListener('keydown', onKey);
     return () => { document.removeEventListener('keydown', onKey); opener?.focus?.(); };
-  }, [onClose]);
+  }, []);
 
   const upload = useMutation({
     mutationFn: async (file) => {
@@ -68,15 +74,11 @@ export default function AddItemModal({ list, onClose }) {
   const drop = (e) => { e.preventDefault(); setDragging(false); upload.mutate(e.dataTransfer.files?.[0]); };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-ink/30" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-ink/30" onClick={() => dismiss.current()}>
+      <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="add-title" onClick={(e) => e.stopPropagation()} className="h-full w-full max-w-[540px]">
       <form
-        ref={dialog}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="add-title"
-        onClick={(e) => e.stopPropagation()}
         onSubmit={(e) => { e.preventDefault(); add.mutate(); }}
-        className="glass flex h-full w-full max-w-[540px] flex-col bg-paper/80"
+        className="glass flex h-full flex-col bg-paper/80"
       >
         <div className="flex items-start justify-between gap-4 border-b-2 border-ink px-7 py-6">
           <div>
@@ -108,7 +110,7 @@ export default function AddItemModal({ list, onClose }) {
                 onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={drop}
-                className={`relative flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-3 p-6 text-center shadow-[inset_0_0_0_2px_var(--color-ink)] focus-within:outline-3 focus-within:outline-signal ${dragging ? 'bg-signal/20' : 'bg-field hover:bg-paper'}`}
+                className={`relative flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-3 p-6 text-center edge focus-within:outline-3 focus-within:outline-signal ${dragging ? 'bg-signal/20' : 'bg-field hover:bg-paper'}`}
               >
                 <input type="file" accept="image/*" className="sr-only" onChange={pick} disabled={upload.isPending} />
                 <span className="grid size-16 place-items-center rounded-full bg-signal text-black"><Gift size={30} /></span>
@@ -159,7 +161,7 @@ export default function AddItemModal({ list, onClose }) {
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-2 font-bold">{t('howMuch')}</legend>
             {/* Real radio buttons: arrow keys move between options */}
-            <div className="flex gap-1 bg-field p-1 shadow-[inset_0_0_0_2px_var(--color-ink)]">
+            <div className="flex gap-1 bg-field p-1 edge">
               {PRIORITIES.map((v) => (
                 <label key={v} className="flex-1 cursor-pointer">
                   <input type="radio" name="priority" value={v} checked={form.priority === v} onChange={() => setForm({ ...form, priority: v })} className="peer sr-only" />
@@ -171,7 +173,7 @@ export default function AddItemModal({ list, onClose }) {
             </div>
           </fieldset>
 
-          <div className="glass flex items-center justify-between gap-4 p-4">
+          <div className="glass-card flex items-center justify-between gap-4 p-4">
             <div>
               <p id="group-label" className="font-bold">{t('groupToggle')}</p>
               <p className="text-sm text-mute">{t('groupToggleHint')}</p>
@@ -196,6 +198,7 @@ export default function AddItemModal({ list, onClose }) {
           <button className="btn btn-primary" disabled={add.isPending || upload.isPending}>{t(add.isPending ? 'adding' : 'addWishSubmit')}</button>
         </div>
       </form>
+      </div>
     </div>
   );
 }

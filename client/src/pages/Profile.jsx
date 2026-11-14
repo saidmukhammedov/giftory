@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import api from '../api';
@@ -11,7 +11,7 @@ import { connectTelegram, useTelegramEnabled } from '../telegram';
 function Card({ title, children, tone = '' }) {
   const id = useId();
   return (
-    <section className={`glass flex flex-col gap-5 p-6 sm:p-8 ${tone}`} aria-labelledby={id}>
+    <section className={`glass-card flex flex-col gap-5 p-6 sm:p-8 ${tone}`} aria-labelledby={id}>
       <h2 id={id} className="display text-3xl">{title}</h2>
       {children}
     </section>
@@ -22,7 +22,7 @@ function Card({ title, children, tone = '' }) {
 function Status({ m, ok }) {
   const t = useT();
   if (m.isError) return <p role="alert" className="bg-ink p-3 font-semibold text-paper">{t.error(m.error)}</p>;
-  if (m.isSuccess) return <p role="status" className="font-semibold text-signal">{ok}</p>;
+  if (m.isSuccess) return <p role="status" className="font-semibold text-signal-deep">{ok}</p>;
   return null;
 }
 
@@ -34,6 +34,8 @@ export default function Profile() {
   const [details, setDetails] = useState({ name: user.name, email: user.email || '' });
   const [pw, setPw] = useState({ currentPassword: '', newPassword: '' });
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const deleteButton = useRef(null);
+  const keepAccount = () => { setConfirmDelete(false); requestAnimationFrame(() => deleteButton.current?.focus()); };
 
   const saveDetails = useMutation({ mutationFn: () => api.patch('/auth/me', details), onSuccess: (r) => setUser(r.data.user) });
   const savePw = useMutation({ mutationFn: () => api.put('/auth/password', pw), onSuccess: (r) => { setUser(r.data.user); setPw({ currentPassword: '', newPassword: '' }); } });
@@ -102,7 +104,7 @@ export default function Profile() {
                 <button className="btn btn-outline self-start" disabled={!canDisconnect || disconnect.isPending} onClick={() => disconnect.mutate()}>{t('disconnectTelegram')}</button>
               </>
             ) : (
-              <button className="btn self-start bg-[#2AABEE] text-black hover:bg-ink hover:text-paper" onClick={connectTelegram}><Send size={18} /> {t('connectTelegram')}</button>
+              <button className="btn self-start bg-telegram text-black hover:bg-ink hover:text-paper" onClick={connectTelegram}><Send size={18} /> {t('connectTelegram')}</button>
             )}
           </Card>
         )}
@@ -122,13 +124,13 @@ export default function Profile() {
         <Card title={t('deleteTitle')} tone="shadow-[inset_0_0_0_2px_var(--color-signal)]">
           <p className="max-w-[60ch] leading-relaxed">{t('deleteText')}</p>
           {!confirmDelete ? (
-            <button className="btn btn-outline self-start" onClick={() => setConfirmDelete(true)}>{t('deleteAccount')}</button>
+            <button ref={deleteButton} className="btn btn-outline self-start" onClick={() => setConfirmDelete(true)}>{t('deleteAccount')}</button>
           ) : (
             <div role="group" aria-labelledby="delete-q" className="flex flex-col gap-3">
               <p id="delete-q" className="text-lg font-bold">{t('deleteConfirm')}</p>
               <Status m={remove} ok="" />
               <div className="flex flex-wrap gap-3">
-                <button className="btn btn-primary" autoFocus onClick={() => setConfirmDelete(false)}>{t('deleteNo')}</button>
+                <button className="btn btn-primary" autoFocus onClick={keepAccount}>{t('deleteNo')}</button>
                 <button className="btn btn-outline" disabled={remove.isPending} onClick={() => remove.mutate()}>{t(remove.isPending ? 'deleting' : 'deleteYes')}</button>
               </div>
             </div>

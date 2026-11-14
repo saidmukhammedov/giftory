@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { usePrefs } from '../i18n';
-import { Close, Logo, Menu, Moon, Send, Sun } from './Icons';
+import { Chevron, Close, Logo, Menu, Moon, Send, Sun } from './Icons';
 import { connectTelegram, useTelegramEnabled } from '../telegram';
 
 // Flat orange/ink shapes that sit behind the glass. Each: [kind, size, css position]
@@ -22,14 +22,14 @@ export function Page({ shapes = [], children }) {
   );
 }
 
-const box = 'shadow-[inset_0_0_0_2px_var(--color-ink)]';
+const box = 'edge';
 
 export function LangSwitch() {
   const { t, lang, setLang } = usePrefs();
   return (
     <div role="group" aria-label={t('language')} className={`flex ${box}`}>
       {['en', 'ru'].map((l) => (
-        <button key={l} lang={l} aria-pressed={lang === l} onClick={() => setLang(l)} className={`min-h-11 min-w-11 cursor-pointer px-2 text-sm font-bold uppercase ${lang === l ? 'bg-ink text-paper' : 'hover:text-signal'}`}>
+        <button key={l} lang={l} aria-pressed={lang === l} onClick={() => setLang(l)} className={`min-h-11 min-w-11 cursor-pointer px-2 text-sm font-bold uppercase ${lang === l ? 'bg-ink text-paper' : 'hover:text-signal-deep'}`}>
           {l}
         </button>
       ))}
@@ -98,24 +98,25 @@ function AccountMenu({ user, onLogout }) {
   const { t } = usePrefs();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  useDismiss(open, () => setOpen(false), ref);
+  const button = useRef(null);
+  // Escape or a click outside closes it; focus goes back to the avatar button
+  useDismiss(open, () => { setOpen(false); button.current?.focus(); }, ref);
+  const item = 'flex min-h-11 cursor-pointer items-center gap-2 px-3 text-left font-semibold no-underline hover:bg-ink hover:text-paper';
 
   return (
     <div ref={ref} className="relative">
-      <button onClick={() => setOpen(!open)} aria-label={t('account')} aria-haspopup="menu" aria-expanded={open} className="cursor-pointer rounded-full">
+      <button ref={button} onClick={() => setOpen(!open)} aria-label={t('account')} aria-expanded={open} aria-controls="account-panel" className="cursor-pointer rounded-full">
         <Avatar user={user} className={open ? 'outline-3 outline-offset-2 outline-ink' : ''} />
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 top-full z-50 mt-3 flex w-64 flex-col p-2 bg-paper shadow-[inset_0_0_0_2px_var(--color-ink),0_24px_48px_-20px_rgb(0_0_0/.45)]">
+        <div id="account-panel" className="absolute right-0 top-full z-50 mt-3 flex w-64 flex-col p-2 pop">
           <div className="border-b-2 border-ink/15 px-3 pb-3 pt-2">
             <p className="font-bold">{user.name}</p>
             <p className="truncate text-sm text-mute">{user.email}</p>
           </div>
-          <Link role="menuitem" to="/profile" className="mt-1 flex min-h-11 items-center px-3 font-semibold no-underline hover:bg-ink hover:text-paper">{t('profile')}</Link>
-          <ConnectTelegram className="flex min-h-11 cursor-pointer items-center gap-2 px-3 text-left font-semibold hover:bg-ink hover:text-paper" />
-          <button role="menuitem" onClick={onLogout} className="mt-1 min-h-11 cursor-pointer px-3 text-left font-semibold hover:bg-ink hover:text-paper">
-            {t('logOut')}
-          </button>
+          <Link to="/profile" className={`mt-1 ${item}`}>{t('profile')}</Link>
+          <ConnectTelegram className={item} />
+          <button onClick={onLogout} className={`mt-1 ${item}`}>{t('logOut')}</button>
         </div>
       )}
     </div>
@@ -139,8 +140,8 @@ export function Header() {
 
   const logout = () => { signOut(); navigate('/'); };
   const links = user ? [['/dashboard', 'myLists'], ['/reserved', 'reservedNav'], ['/profile', 'profile']] : [];
-  const desk = ({ isActive }) => `px-3 py-2.5 font-semibold no-underline ${isActive ? 'bg-ink text-paper' : 'hover:text-signal'}`;
-  const mob = ({ isActive }) => `flex min-h-14 items-center justify-between border-b-2 border-ink/15 px-1 text-xl font-bold no-underline ${isActive ? 'text-signal' : ''}`;
+  const desk = ({ isActive }) => `px-3 py-2.5 font-semibold no-underline ${isActive ? 'bg-ink text-paper' : 'hover:text-signal-deep'}`;
+  const mob = ({ isActive }) => `flex min-h-14 items-center justify-between border-b-2 border-ink/15 px-1 text-xl font-bold no-underline ${isActive ? 'text-signal-deep' : ''}`;
 
   return (
     <div ref={ref} className="sticky top-0 z-40 mx-auto max-w-[1376px] px-3 pt-3 sm:px-8 sm:pt-5">
@@ -154,7 +155,7 @@ export function Header() {
         {/* Desktop: everything in one row */}
         <nav className="hidden items-center gap-3 lg:flex">
           {links.slice(0, 2).map(([to, key]) => <NavLink key={to} to={to} className={desk}>{t(key)}</NavLink>)}
-          {!user && <Link to="/login" className="px-3 py-2.5 font-semibold no-underline hover:text-signal">{t('login')}</Link>}
+          {!user && <Link to="/login" className="px-3 py-2.5 font-semibold no-underline hover:text-signal-deep">{t('login')}</Link>}
           <LangSwitch />
           <ThemeButton />
           {user ? <AccountMenu user={user} onLogout={logout} /> : <Link to="/signup" className="btn btn-primary min-h-11 px-5 text-[15px]">{t('create')}</Link>}
@@ -167,14 +168,14 @@ export function Header() {
           aria-expanded={menu}
           aria-controls="mobile-menu"
           aria-label={t(menu ? 'closeMenu' : 'menu')}
-          className="grid size-11 cursor-pointer place-items-center hover:text-signal lg:hidden"
+          className="grid size-11 cursor-pointer place-items-center hover:text-signal-deep lg:hidden"
         >
           {menu ? <Close /> : <Menu />}
         </button>
       </header>
 
       {menu && (
-        <div ref={panel} id="mobile-menu" className="absolute inset-x-3 top-full mt-2 flex max-h-[calc(100dvh-90px)] flex-col gap-5 overflow-y-auto p-5 sm:inset-x-8 lg:hidden bg-paper shadow-[inset_0_0_0_2px_var(--color-ink),0_24px_48px_-20px_rgb(0_0_0/.45)]">
+        <div ref={panel} id="mobile-menu" className="absolute inset-x-3 top-full mt-2 flex max-h-[calc(100dvh-90px)] flex-col gap-5 overflow-y-auto p-5 sm:inset-x-8 lg:hidden pop">
           {user ? (
             <>
               <div className="flex items-center gap-3">
@@ -185,7 +186,7 @@ export function Header() {
                 </div>
               </div>
               <nav className="flex flex-col">
-                {links.map(([to, key]) => <NavLink key={to} to={to} className={mob}>{t(key)} <span aria-hidden="true">›</span></NavLink>)}
+                {links.map(([to, key]) => <NavLink key={to} to={to} className={mob}>{t(key)} <Chevron /></NavLink>)}
               </nav>
             </>
           ) : (
@@ -206,7 +207,7 @@ export function Header() {
             </div>
           </div>
 
-          {user && <ConnectTelegram className="btn w-full bg-[#2AABEE] text-black hover:bg-ink hover:text-paper" />}
+          {user && <ConnectTelegram className="btn w-full bg-telegram text-black hover:bg-ink hover:text-paper" />}
           {user && <button onClick={logout} className="btn btn-outline w-full">{t('logOut')}</button>}
         </div>
       )}
@@ -242,7 +243,7 @@ export function CookieNotice() {
   if (seen) return null;
   const close = () => { try { localStorage.setItem('giftory_cookie_notice', '1'); } catch {} setSeen(true); };
   return (
-    <section aria-label={t('cookies')} className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-3xl flex-wrap items-center gap-4 bg-paper p-4 shadow-[inset_0_0_0_2px_var(--color-ink),0_24px_48px_-20px_rgb(0_0_0/.45)] sm:p-5">
+    <section aria-label={t('cookies')} className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-3xl flex-wrap items-center gap-4 p-4 pop sm:p-5">
       <p className="min-w-0 flex-[1_1_320px] text-[15px] leading-normal">
         {t('cookieNotice')} <Link to="/cookies" className="font-semibold">{t('cookieMore')}</Link>
       </p>

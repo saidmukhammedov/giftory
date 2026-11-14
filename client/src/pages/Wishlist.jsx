@@ -77,7 +77,11 @@ function FriendView({ wishlist, items }) {
 
   const act = useMutation({
     mutationFn: ({ method, url, body }) => api[method](url, body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['wishlist', wishlist.slug] }),
+    // The button pressed can disappear (Reserve becomes "Reserved by you"), so move focus to what replaced it
+    onSuccess: async (_, { focus = [] }) => {
+      await qc.invalidateQueries({ queryKey: ['wishlist', wishlist.slug] });
+      requestAnimationFrame(() => focus.map((id) => document.getElementById(id)).find(Boolean)?.focus());
+    },
     onError: (e) => {
       setFlash(t.error(e));
       qc.invalidateQueries({ queryKey: ['wishlist', wishlist.slug] });
@@ -120,7 +124,7 @@ function FriendView({ wishlist, items }) {
 
       <section className="mx-auto max-w-[1376px] px-4 pb-24 sm:px-8">
         {shown.length === 0 && (
-          <div className="glass flex flex-col items-center gap-4 px-6 py-14 text-center">
+          <div className="glass-card flex flex-col items-center gap-4 px-6 py-14 text-center">
             <p className="display text-3xl">{t(filter === 'mine' ? 'noneMine' : 'nonePicked')}</p>
             <button className="btn btn-primary" onClick={() => setFilter('all')}>{t('showAll')}</button>
           </div>
@@ -131,7 +135,7 @@ function FriendView({ wishlist, items }) {
             const takenByOther = item.isReserved && !item.reservedByMe;
             const amount = Math.min(amounts[item.id] || 250000, left(item));
             return (
-              <Tag key={item.id} className={takenByOther ? 'opacity-80' : ''}>
+              <Tag key={item.id} className={`[contain-intrinsic-size:auto_540px] [content-visibility:auto] ${takenByOther ? 'opacity-80' : ''}`}>
                 <ItemTile item={item} index={index} wrapped={!item.isGroupGift && item.isReserved} />
                 <div className="flex flex-col gap-1.5">
                   <div className="flex flex-wrap gap-2">
@@ -150,14 +154,14 @@ function FriendView({ wishlist, items }) {
 
                 <div className="mt-auto flex flex-col gap-3 pt-1">
                   {!item.isGroupGift && !item.isReserved && (
-                    <button className="btn btn-primary" disabled={act.isPending} onClick={() => run({ method: 'post', url: `/items/${item.id}/reserve` })}>
+                    <button id={`reserve-${item.id}`} className="btn btn-primary" disabled={act.isPending} onClick={() => run({ method: 'post', url: `/items/${item.id}/reserve`, focus: [`mine-${item.id}`] })}>
                       {t('reserve')}
                     </button>
                   )}
                   {item.reservedByMe && (
                     <>
-                      <span className="btn btn-outline cursor-default shadow-[inset_0_0_0_2px_var(--color-signal)] hover:!bg-field hover:!text-ink"><Check size={18} /> {t('reservedByYou')}</span>
-                      <button className="min-h-11 cursor-pointer font-semibold underline" onClick={() => run({ method: 'delete', url: `/items/${item.id}/reserve` })}>{t('cancelReservation')}</button>
+                      <span id={`mine-${item.id}`} tabIndex={-1} className="btn btn-outline cursor-default shadow-[inset_0_0_0_2px_var(--color-signal)] hover:!bg-field hover:!text-ink"><Check size={18} /> {t('reservedByYou')}</span>
+                      <button className="min-h-11 cursor-pointer font-semibold underline" onClick={() => run({ method: 'delete', url: `/items/${item.id}/reserve`, focus: [`reserve-${item.id}`] })}>{t('cancelReservation')}</button>
                     </>
                   )}
                   {takenByOther && <p className="border-t-2 border-ink/15 pt-3 text-center font-semibold text-mute">{t('takenByOther')}</p>}
@@ -178,12 +182,12 @@ function FriendView({ wishlist, items }) {
                               <button key={a} className="chip flex-1 px-1.5 text-sm" aria-pressed={amount === a} onClick={() => setAmounts({ ...amounts, [item.id]: a })}>{som(a)}</button>
                             ))}
                           </div>
-                          <button className="btn btn-primary" disabled={act.isPending} onClick={() => run({ method: 'post', url: `/items/${item.id}/contribute`, body: { amount } })}>
+                          <button id={`chip-${item.id}`} className="btn btn-primary" disabled={act.isPending} onClick={() => run({ method: 'post', url: `/items/${item.id}/contribute`, body: { amount }, focus: [`chip-${item.id}`, `funded-${item.id}`] })}>
                             {t('chipIn', { x: som(amount) })}
                           </button>
                         </>
                       ) : (
-                        <p className="text-center font-bold text-signal">{t('fullyFunded')}</p>
+                        <p id={`funded-${item.id}`} tabIndex={-1} className="text-center font-bold text-signal-deep">{t('fullyFunded')}</p>
                       )}
                       {item.myContribution > 0 && <p className="text-center text-sm text-mute">{t('youChipped', { x: som(item.myContribution) })}</p>}
                     </>
@@ -205,7 +209,6 @@ function OwnerView({ wishlist, items }) {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [adding, setAdding] = useState(false);
-  const [copied, setCopied] = useState(false);
   const url = `${window.location.origin}/w/${wishlist.slug}`;
   const picked = items.filter((i) => !i.isGroupGift && i.isReserved).length;
   const refresh = () => qc.invalidateQueries({ queryKey: ['wishlist', wishlist.slug] });
@@ -213,10 +216,17 @@ function OwnerView({ wishlist, items }) {
   const removeItem = useMutation({ mutationFn: (id) => api.delete(`/items/${id}`), onSuccess: refresh });
   const removeList = useMutation({ mutationFn: () => api.delete(`/wishlists/${wishlist.id}`), onSuccess: () => navigate('/dashboard') });
 
+  const [copied, setCopied] = useState('');
+  // Clipboard access can be blocked (old browsers, in-app browsers). Then select the link so it can be copied by hand.
   const copy = async () => {
-    await navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied('copied');
+    } catch {
+      document.getElementById('share')?.select();
+      setCopied('copyManual');
+    }
+    setTimeout(() => setCopied(''), 4000);
   };
 
   return (
@@ -236,11 +246,12 @@ function OwnerView({ wishlist, items }) {
       />
 
       <section className="mx-auto grid max-w-[1376px] gap-5 px-4 pb-10 sm:px-8 md:grid-cols-2">
-        <div className="glass flex flex-col gap-3.5 p-7">
+        <div className="glass-card flex flex-col gap-3.5 p-7">
           <label htmlFor="share" className="font-bold">{t('shareLink')}</label>
+          <p role="status" className="sr-only">{copied && t(copied)}</p>
           <div className="flex flex-wrap gap-2.5">
             <input id="share" readOnly value={url} className="input min-w-0 flex-[1_1_200px] font-medium" onFocus={(e) => e.target.select()} />
-            <button className="btn btn-primary" onClick={copy} aria-live="polite">{t(copied ? 'copied' : 'copyLink')}</button>
+            <button className="btn btn-primary" onClick={copy}>{t(copied || 'copyLink')}</button>
             <a className="btn btn-outline" href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(wishlist.title)}`} target="_blank" rel="noreferrer">
               <Send size={18} /> Telegram
             </a>
@@ -259,7 +270,7 @@ function OwnerView({ wishlist, items }) {
 
       <section className="mx-auto max-w-[1376px] px-4 pb-24 sm:px-8">
         <div className="grid gap-x-6 gap-y-8 [grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr))]">
-          <button onClick={() => setAdding(true)} className="glass flex min-h-[400px] cursor-pointer flex-col items-center justify-center gap-3.5 !shadow-[inset_0_0_0_2px_var(--color-ink)] hover:bg-paper/80">
+          <button onClick={() => setAdding(true)} className="glass-card flex min-h-[400px] cursor-pointer flex-col items-center justify-center gap-3.5 edge hover:bg-paper/80">
             <span className="grid size-16 place-items-center rounded-full bg-signal text-black"><Plus size={28} /></span>
             <span className="text-lg font-bold">{t('addWish')}</span>
             <span className="max-w-[14em] text-center text-mute">{t('addTileText')}</span>
@@ -269,7 +280,7 @@ function OwnerView({ wishlist, items }) {
             const hidden = !item.isGroupGift && item.isReserved;
             const pct = Math.round((item.funded / item.price) * 100) || 0;
             return (
-              <Tag key={item.id} className="pb-3.5">
+              <Tag key={item.id} className="[contain-intrinsic-size:auto_540px] [content-visibility:auto] pb-3.5">
                 <ItemTile item={item} index={index} wrapped={hidden} hideImage={hidden} />
                 {hidden ? (
                   <div>

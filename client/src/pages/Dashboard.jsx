@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { TELEGRAM_ERRORS } from '../telegram';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -23,12 +23,12 @@ function NewListForm({ onCancel }) {
   });
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); create.mutate(); }} className="glass flex flex-col gap-5 p-7">
+    <form onSubmit={(e) => { e.preventDefault(); create.mutate(); }} className="glass-card flex flex-col gap-5 p-7">
       <h2 className="display text-3xl">{t('newList')}</h2>
       <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr]">
         <label className="flex flex-col gap-2 font-bold">
           {t('listName')}
-          <input className="input font-normal" required value={form.title} onChange={set('title')} placeholder={t('listNamePh')} />
+          <input className="input font-normal" required autoFocus value={form.title} onChange={set('title')} placeholder={t('listNamePh')} />
         </label>
         <label className="flex flex-col gap-2 font-bold">
           {t('occasion')}
@@ -58,6 +58,9 @@ export default function Dashboard() {
   const { user } = useAuth();
   const t = useT();
   const [creating, setCreating] = useState(false);
+  const newButton = useRef(null);
+  // Cancelling the form brings keyboard focus back to the button that opened it
+  const cancel = () => { setCreating(false); requestAnimationFrame(() => newButton.current?.focus()); };
   const tgError = TELEGRAM_ERRORS[useSearchParams()[0].get('error')];
   const { data: lists, isLoading, isError, error } = useQuery({ queryKey: ['my-lists'], queryFn: () => api.get('/wishlists/mine').then((r) => r.data) });
 
@@ -70,17 +73,17 @@ export default function Dashboard() {
             <p className="text-lg text-mute">{t('hi', { name: user.name })}</p>
             <h1 className="display mt-2 text-[clamp(40px,5vw,72px)]">{t('yourLists')}</h1>
           </div>
-          {!creating && <button className="btn btn-primary" onClick={() => setCreating(true)}><Plus size={18} /> {t('newList')}</button>}
+          {!creating && <button ref={newButton} className="btn btn-primary" onClick={() => setCreating(true)}><Plus size={18} /> {t('newList')}</button>}
         </div>
 
         {lists?.filter(isBirthdayToday).slice(0, 1).map((l) => <BirthdayBanner key={l.id} name={user.name.split(' ')[0]} picked={l.reserved} />)}
         {tgError && <p role="alert" className="bg-ink p-4 font-semibold text-paper">{t(tgError)}</p>}
-        {creating && <NewListForm onCancel={() => setCreating(false)} />}
+        {creating && <NewListForm onCancel={cancel} />}
         {isError && <p role="alert" className="bg-ink p-4 font-semibold text-paper">{t.error(error)}</p>}
         {isLoading && <p className="text-mute">{t('loadingLists')}</p>}
 
         {lists?.length === 0 && !creating && (
-          <div className="glass flex flex-col items-center gap-4 px-6 py-16 text-center">
+          <div className="glass-card flex flex-col items-center gap-4 px-6 py-16 text-center">
             <p className="display text-3xl">{t('noListsTitle')}</p>
             <p className="max-w-md text-mute">{t('noListsText')}</p>
             <button className="btn btn-primary" onClick={() => setCreating(true)}>{t('firstList')}</button>
@@ -89,7 +92,7 @@ export default function Dashboard() {
 
         <div className="grid gap-6 [grid-template-columns:repeat(auto-fill,minmax(min(380px,100%),1fr))]">
           {lists?.map((l) => (
-            <Link key={l.id} to={`/w/${l.slug}`} className="glass tag-h group relative flex flex-col gap-4 py-7 pl-16 pr-7 no-underline">
+            <Link key={l.id} to={`/w/${l.slug}`} className="glass-card tag-h group relative flex flex-col gap-4 py-7 pl-16 pr-7 no-underline">
               <span className="absolute left-5 top-1/2 size-3.5 -translate-y-1/2 rounded-full bg-paper shadow-[0_0_0_2px_var(--color-ink)]" />
               <div>
                 <p className="text-sm font-bold text-mute">{[l.occasion && t.occasion(l.occasion), t.date(l.eventDate)].filter(Boolean).join(', ')}</p>

@@ -7,10 +7,13 @@
   --color-paper: #F4F4F1;
   --color-ink: #000000;
   --color-signal: #FF4D00;
+  --color-signal-deep: #C23800; /* orange for small text: 5:1 on paper and glass */
+  --color-telegram: #2AABEE;
   --color-peach: #FFB59A;
   --color-stone: #D8D8D0;
   --color-mute: #4A4A45;
   --color-glass: rgb(255 255 255 / .44);
+  --color-card: rgb(255 255 255 / .72); /* denser glass for text-heavy cards, readable over orange */
   --color-field: rgb(255 255 255 / .6);
   --color-edge: rgb(255 255 255 / .9);
   --color-film: rgb(255 255 255 / .5);
@@ -25,7 +28,9 @@
     --color-peach: #5E3A2B;
     --color-stone: #2D2D29;
     --color-mute: #A9A9A0;
+    --color-signal-deep: #FF4D00;
     --color-glass: rgb(30 30 27 / .62);
+    --color-card: rgb(30 30 27 / .8);
     --color-field: rgb(255 255 255 / .06);
     --color-edge: rgb(255 255 255 / .16);
     --color-film: rgb(22 22 20 / .55);
@@ -34,7 +39,8 @@
   body { @apply bg-paper text-ink antialiased; transition: background-color .2s, color .2s; }
   a { text-decoration-thickness: 2px; text-underline-offset: 4px; }
   :focus-visible { outline: 3px solid var(--color-signal); outline-offset: 3px; }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  ::selection { background: var(--color-signal); color: #000; }
+  input, textarea { caret-color: var(--color-signal); }
 }
 
 @layer components {
@@ -47,6 +53,15 @@
     backdrop-filter: blur(22px) saturate(140%);
     box-shadow: inset 0 0 0 1.5px var(--color-edge), 0 24px 48px -26px rgb(0 0 0 / .35);
   }
+  /* Item and step cards: denser and a lighter blur, so text stays readable and long grids stay smooth */
+  .glass-card {
+    background: var(--color-card);
+    backdrop-filter: blur(12px);
+    box-shadow: inset 0 0 0 1.5px var(--color-edge), 0 24px 48px -26px rgb(0 0 0 / .35);
+  }
+  /* A 2px ink outline, and the shadow for panels that pop over the page */
+  .edge { box-shadow: inset 0 0 0 2px var(--color-ink); }
+  .pop { background: var(--color-paper); box-shadow: inset 0 0 0 2px var(--color-ink), 0 24px 48px -20px rgb(0 0 0 / .45); }
   /* Inverted panel: dark on light theme, light on dark theme */
   .glass-dark { background: color-mix(in srgb, var(--color-ink) 88%, transparent); color: var(--color-paper); backdrop-filter: blur(18px); }
 
@@ -95,9 +110,17 @@
 }
 
 @keyframes wrap-in { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
+@keyframes fade-in { from { opacity: 0; } }
 
 /* Birthday: one entrance, then still */
 .confetti { animation: confetti-in .7s cubic-bezier(.2, 1.4, .4, 1) both; }
 .bow-pop { animation: bow-pop .6s cubic-bezier(.2, 1.6, .4, 1) .2s both; }
 @keyframes confetti-in { from { opacity: 0; transform: translateY(-24px) scale(.4); } }
 @keyframes bow-pop { from { opacity: 0; transform: scale(.3) rotate(-25deg); } }
+
+/* Reduced motion: no sliding, popping or growing. Changes still show, as a short fade. */
+@media (prefers-reduced-motion: reduce) {
+  .frost, .confetti, .bow-pop { animation: fade-in .25s ease-out both; }
+  .btn:active { transform: none; }
+  .bar > span { transition: none; }
+}

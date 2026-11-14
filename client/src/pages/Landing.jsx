@@ -16,11 +16,11 @@ export default function Landing() {
       <Header />
 
       <main id="main" tabIndex={-1} className="outline-none">
-      <section className="relative mx-auto flex min-h-[820px] max-w-[1376px] flex-col px-4 pb-24 pt-14 sm:px-8">
+      <section className="relative mx-auto flex max-w-[1376px] flex-col px-4 pb-24 pt-14 sm:px-8 lg:min-h-[820px]">
         <h1 className={`display relative z-10 max-w-[1040px] leading-[.86] lg:max-w-[780px] ${lang === 'ru' ? 'text-[clamp(40px,6vw,90px)]' : 'text-[clamp(52px,8.6vw,128px)]'}`}>{t('heroTitle')}</h1>
 
-        <div className="relative z-0 mt-8 h-[700px] sm:h-[560px] lg:absolute lg:right-8 lg:top-[90px] lg:mt-0 lg:h-[640px] lg:w-[560px]" role="img" aria-label={t('demoAria')}>
-          <div className="absolute left-0 top-[40px] w-[200px] -rotate-6 sm:top-[150px] sm:w-[280px]">
+        <div className="relative z-0 order-last mt-14 h-[640px] sm:h-[480px] lg:absolute lg:order-none lg:right-8 lg:top-[90px] lg:mt-0 lg:h-[640px] lg:w-[560px]" role="img" aria-label={t('demoAria')}>
+          <div className="absolute left-0 top-0 w-[200px] -rotate-6 sm:w-[280px] lg:top-[150px]">
             <span className="mb-3 ml-2 inline-block bg-ink px-2.5 py-1 text-[13px] font-bold text-paper">{t('friendSees')}</span>
             <Tag>
               <ItemTile item={{}} index={1} />
@@ -31,8 +31,8 @@ export default function Landing() {
               <span className="btn btn-primary min-h-[46px] whitespace-normal px-2 text-center text-[13px] sm:px-3 sm:text-[15px]"><Check size={16} className="hidden shrink-0 sm:block" /> {t('reservedByYou')}</span>
             </Tag>
           </div>
-          <div className="absolute right-0 top-[300px] w-[200px] rotate-[7deg] sm:top-[200px] sm:w-[290px] lg:right-2.5 lg:top-[30px]">
-            <span className="mb-3 ml-2 inline-block bg-signal px-2.5 py-1 text-[13px] font-bold text-black">{t('youSee')}</span>
+          <div className="absolute right-0 top-[330px] w-[200px] rotate-[7deg] sm:top-[60px] sm:w-[290px] lg:right-2.5 lg:top-[30px]">
+            <span className="mb-3 ml-2 inline-block bg-paper px-2.5 py-1 text-[13px] font-bold text-ink edge">{t('youSee')}</span>
             <Tag>
               <ItemTile item={{}} index={1} wrapped />
               <div>
@@ -43,7 +43,7 @@ export default function Landing() {
           </div>
         </div>
 
-        <div className="relative z-10 mt-auto flex max-w-[560px] flex-col gap-6 pt-12">
+        <div className="relative z-10 mt-8 flex max-w-[560px] flex-col gap-6 lg:mt-auto lg:pt-12">
           <p className="text-xl leading-normal">{t('heroSub')}</p>
           <div className="flex flex-wrap gap-3">
             <Link to="/signup" className="btn btn-primary min-h-[60px] px-8 text-lg">{t('create')}</Link>
@@ -72,7 +72,7 @@ export default function Landing() {
       </section>
 
       <section className="mx-auto max-w-[1376px] px-4 pb-36 sm:px-8">
-        <div className="glass grid items-center gap-14 p-8 md:grid-cols-2 md:p-16">
+        <div className="glass-card grid items-center gap-14 p-8 md:grid-cols-2 md:p-16">
           <div className="flex flex-col gap-5">
             <h2 className="display text-[clamp(38px,4.8vw,72px)]">{t('groupTitle')}</h2>
             <p className="max-w-[27em] text-lg leading-relaxed">{t('groupText')}</p>

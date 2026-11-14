@@ -1,16 +1,18 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './auth';
+import { lazy, Suspense, useEffect } from 'react';
 import Landing from './pages/Landing';
-import Auth from './pages/Auth';
-import Dashboard from './pages/Dashboard';
-import Wishlist from './pages/Wishlist';
-import Reserved from './pages/Reserved';
-import NotFound from './pages/NotFound';
-import TelegramCallback from './pages/TelegramCallback';
-import Profile from './pages/Profile';
-import Legal from './pages/Legal';
 import { CookieNotice } from './components/Layout';
-import { useEffect } from 'react';
+
+// Each page downloads only when it's first opened
+const Auth = lazy(() => import('./pages/Auth'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Wishlist = lazy(() => import('./pages/Wishlist'));
+const Reserved = lazy(() => import('./pages/Reserved'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const TelegramCallback = lazy(() => import('./pages/TelegramCallback'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Legal = lazy(() => import('./pages/Legal'));
 
 function Private({ children }) {
   const { user, ready } = useAuth();
@@ -24,6 +26,7 @@ export default function App() {
   useEffect(() => window.scrollTo(0, 0), [pathname]);
   return (
     <>
+    <Suspense fallback={null}>
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Auth mode="login" />} />
@@ -38,6 +41,7 @@ export default function App() {
       <Route path="/cookies" element={<Legal doc="cookies" />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </Suspense>
     <CookieNotice />
     </>
   );

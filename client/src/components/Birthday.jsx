@@ -28,7 +28,7 @@ export function BirthdayBanner({ name, picked }) {
         />
       ))}
       <div className="flex flex-wrap items-center gap-6">
-        <div className="bow-pop shrink-0"><Bow width={96} fill="#FFFFFF" /></div>
+        <div className="bow-pop shrink-0"><Bow width={96} fill="white" /></div>
         <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-3">
           <h2 id="bday" className="display text-[clamp(36px,6vw,80px)]">{t('happyBirthday', { name })}</h2>
           <p className="max-w-[40ch] text-lg font-semibold">{picked ? t('birthdayText', { n: picked }) : t('birthdayTextNone')}</p>

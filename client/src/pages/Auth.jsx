@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import api from '../api';
@@ -19,6 +19,7 @@ export default function Auth({ mode }) {
   const telegram = useTelegramEnabled();
   const [form, setForm] = useState({ name: '', email: '', password: '', acceptTerms: false });
   const [showPw, setShowPw] = useState(false);
+  const pwId = useId();
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   const submit = useMutation({
@@ -32,15 +33,15 @@ export default function Auth({ mode }) {
   return (
     <Page shapes={[['circle', 600, { right: -100, top: -120 }], ['dot', 300, { left: '46%', bottom: -140 }], ['square', 260, { left: -100, top: 160, rotate: '12deg' }]]}>
       <div className="mx-auto flex min-h-screen max-w-[1240px] flex-col gap-8 px-4 pb-14 pt-7 sm:px-8">
-        <div className="flex items-center justify-between gap-4">
+        <header className="flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2.5 no-underline" aria-label={t('home')}>
             <Logo /> <span className="display text-2xl">giftory</span>
           </Link>
           <PrefsControls />
-        </div>
+        </header>
 
-        <div className="grid flex-1 items-center gap-12 md:grid-cols-2">
-          <form onSubmit={(e) => { e.preventDefault(); submit.mutate(); }} className="glass flex w-full max-w-[480px] flex-col gap-5 p-7 sm:p-12">
+        <main id="main" className="grid flex-1 items-center gap-12 md:grid-cols-2">
+          <form onSubmit={(e) => { e.preventDefault(); submit.mutate(); }} className="glass-card flex w-full max-w-[480px] flex-col gap-5 p-7 sm:p-12">
             <div>
               <h1 className="display text-5xl">{t(signup ? 'signupTitle' : 'loginTitle')}</h1>
               <p className="mt-3 text-lg text-mute">{t(signup ? 'signupSub' : 'loginSub')}</p>
@@ -48,7 +49,7 @@ export default function Auth({ mode }) {
             {tgError && <p role="alert" className="bg-ink p-3 font-semibold text-paper">{t(tgError)}</p>}
             {telegram && (
               <>
-                <a href={telegramLoginUrl(next)} className="btn min-h-14 bg-[#2AABEE] text-black no-underline hover:bg-ink hover:text-paper" aria-describedby="tg-consent">
+                <a href={telegramLoginUrl(next)} className="btn min-h-14 bg-telegram text-black no-underline hover:bg-ink hover:text-paper" aria-describedby="tg-consent">
                   <Send size={20} /> {t('continueTelegram')}
                 </a>
                 <p id="tg-consent" className="-mt-2 text-sm text-mute">
@@ -69,16 +70,17 @@ export default function Auth({ mode }) {
               {t('email')}
               <input className="input font-normal" type="email" required autoComplete="email" value={form.email} onChange={set('email')} placeholder="you@example.com" />
             </label>
-            <label className="flex flex-col gap-2 font-bold">
-              {t('password')}
-              <span className="relative">
-                <input className="input pr-40 font-normal" type={showPw ? 'text' : 'password'} required minLength={signup ? 8 : undefined} autoComplete={signup ? 'new-password' : 'current-password'} value={form.password} onChange={set('password')} />
-                <button type="button" onClick={() => setShowPw(!showPw)} aria-pressed={showPw} className="absolute right-2 top-1/2 min-h-11 -translate-y-1/2 cursor-pointer px-2 text-sm font-semibold underline">
+            {/* The show/hide button sits outside the label, so the field's name stays just "Password" */}
+            <div className="flex flex-col gap-2">
+              <label htmlFor={pwId} className="font-bold">{t('password')}</label>
+              <div className="relative">
+                <input id={pwId} className="input pr-40" type={showPw ? 'text' : 'password'} required minLength={signup ? 8 : undefined} autoComplete={signup ? 'new-password' : 'current-password'} value={form.password} onChange={set('password')} aria-describedby={signup ? `${pwId}-hint` : undefined} />
+                <button type="button" onClick={() => setShowPw(!showPw)} aria-pressed={showPw} aria-controls={pwId} className="absolute right-2 top-1/2 min-h-11 -translate-y-1/2 cursor-pointer px-2 text-sm font-semibold underline">
                   {t(showPw ? 'hidePassword' : 'showPassword')}
                 </button>
-              </span>
-              {signup && <span className="text-sm font-normal text-mute">{t('pwHint')}</span>}
-            </label>
+              </div>
+              {signup && <span id={`${pwId}-hint`} className="text-sm text-mute">{t('pwHint')}</span>}
+            </div>
             {signup && (
               <label className="flex cursor-pointer items-start gap-3 text-[15px] leading-snug">
                 <input type="checkbox" required checked={form.acceptTerms} onChange={(e) => setForm({ ...form, acceptTerms: e.target.checked })} className="mt-0.5 size-6 shrink-0 cursor-pointer accent-[var(--color-signal)]" />
@@ -101,7 +103,7 @@ export default function Auth({ mode }) {
               <div className="frost"><Bow width={150} /></div>
             </div>
           </div>
-        </div>
+        </main>
       </div>
     </Page>
   );

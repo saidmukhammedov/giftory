@@ -101,7 +101,7 @@ router.post('/:id/items', requireAuth, async (req, res) => {
   await ownedList(req.params.id, req.userId);
   const { name, price, link, image, note, priority = 'medium', isGroupGift = false } = req.body;
   if (!name?.trim()) throw fail(400, 'Give the wish a name');
-  if (!(Number(price) >= 0)) throw fail(400, 'Enter a price in soʻm');
+  if (!(Number(price) >= 0)) throw fail(400, 'Enter a price in so‘m');
   const item = await one(
     `INSERT INTO items (wishlist_id, name, price, link, image, note, priority, is_group_gift)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,

@@ -21,7 +21,7 @@ export default function Reserved() {
         {isLoading && <p className="text-mute">{t('loading')}</p>}
         {isError && <p role="alert" className="bg-ink p-4 font-semibold text-paper">{t.error(error)}</p>}
         {data?.length === 0 && (
-          <div className="glass flex flex-col items-center gap-3 px-6 py-16 text-center">
+          <div className="glass-card flex flex-col items-center gap-3 px-6 py-16 text-center">
             <p className="display text-3xl">{t('noneReservedTitle')}</p>
             <p className="text-mute">{t('noneReservedText')}</p>
           </div>

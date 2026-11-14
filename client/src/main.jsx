@@ -7,7 +7,7 @@ import { PrefsProvider } from './i18n';
 import App from './App';
 // Fonts are bundled with the app, so no visitor data goes to a font CDN
 import '@fontsource-variable/archivo/wdth.css';
-import '@fontsource-variable/roboto-flex/full.css';
+import '@fontsource-variable/roboto-flex/wdth.css'; // width and weight axes only
 import './index.css';
 
 // Anonymous, cookieless visit counts (self-hosted Umami, served from our own domain).
