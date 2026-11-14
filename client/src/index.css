@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #F4F4F1;
+  --color-ink: #000000;
+  --color-signal: #FF4D00;
+  --color-peach: #FFB59A;
+  --color-stone: #D8D8D0;
+  --color-mute: #4A4A45;
+  --font-sans: "Archivo", system-ui, sans-serif;
+}
+
+@layer base {
+  body { @apply bg-paper text-ink antialiased; }
+  a { text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  :focus-visible { outline: 3px solid var(--color-signal); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+}
+
+@layer components {
+  /* Display type: wide and heavy, like a poster */
+  .display { font-weight: 900; font-stretch: 118%; letter-spacing: -0.05em; line-height: .9; }
+
+  /* Frosted glass panel, meant to float over flat orange/black shapes */
+  .glass {
+    background: rgb(255 255 255 / .44);
+    backdrop-filter: blur(22px) saturate(140%);
+    box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / .9), 0 24px 48px -26px rgb(0 0 0 / .35);
+  }
+  .glass-dark { background: rgb(0 0 0 / .85); color: var(--color-paper); backdrop-filter: blur(18px); }
+
+  /* Gift tag shapes */
+  .tag-v { clip-path: polygon(26px 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%, 0 26px); }
+  .tag-h { clip-path: polygon(26px 0, 100% 0, 100% 100%, 26px 100%, 0 calc(100% - 26px), 0 26px); }
+  .hole { position: absolute; top: 15px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--color-paper); box-shadow: 0 0 0 2px #000; }
+
+  /* Reserved gifts: frosted cellophane with a black ribbon */
+  .frost {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgb(255 255 255 / .5); backdrop-filter: blur(14px) saturate(120%);
+    animation: wrap-in .7s cubic-bezier(.7, 0, .2, 1) both;
+  }
+  .frost::before, .frost::after { content: ""; position: absolute; background: #000; }
+  .frost::before { left: calc(50% - 8px); top: 0; bottom: 0; width: 16px; }
+  .frost::after { top: calc(50% - 8px); left: 0; right: 0; height: 16px; }
+  .frost > * { position: relative; z-index: 1; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
+    min-height: 54px; padding: 0 1.6rem; font-weight: 800; font-stretch: 110%; white-space: nowrap;
+    text-decoration: none; cursor: pointer; transition: transform .12s ease, background .15s, color .15s;
+  }
+  .btn:active { transform: translate(1px, 1px); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-primary { background: var(--color-signal); color: #000; }
+  .btn-primary:hover:not(:disabled) { background: #000; color: var(--color-paper); }
+  .btn-outline { background: rgb(255 255 255 / .5); backdrop-filter: blur(16px); box-shadow: inset 0 0 0 2px #000; color: #000; }
+  .btn-outline:hover:not(:disabled) { background: #000; color: var(--color-paper); }
+
+  .chip { min-height: 44px; padding: 0 1.1rem; font-weight: 600; background: rgb(255 255 255 / .5); box-shadow: inset 0 0 0 2px #000; cursor: pointer; }
+  .chip:hover { background: #fff; }
+  .chip[aria-pressed="true"] { background: #000; color: var(--color-paper); }
+
+  .input {
+    width: 100%; min-height: 54px; padding: 0 1rem; background: rgb(255 255 255 / .6);
+    box-shadow: inset 0 0 0 2px #000; outline: none;
+  }
+  .input:focus { box-shadow: inset 0 0 0 3px var(--color-signal); background: #fff; }
+  .input::placeholder { color: #6B6B64; }
+
+  .bar { height: 16px; padding: 3px; background: rgb(255 255 255 / .6); box-shadow: inset 0 0 0 2px #000; }
+  .bar > span { display: block; height: 100%; background: var(--color-signal); transition: width .5s ease; }
+}
+
+@keyframes wrap-in { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }

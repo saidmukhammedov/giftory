@@ -1,0 +1,45 @@
+import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import api, { errorText } from '../api';
+import { Page, Header } from '../components/Layout';
+import { Tag, ItemTile } from '../components/Tag';
+import { longDate, som } from '../utils';
+
+export default function Reserved() {
+  const { data, isLoading, isError, error } = useQuery({ queryKey: ['reserved'], queryFn: () => api.get('/items/reserved/mine').then((r) => r.data) });
+
+  return (
+    <Page shapes={[['circle', 460, { right: -140, top: 140 }], ['square', 280, { left: -60, top: 700, rotate: '10deg' }]]}>
+      <Header />
+      <main className="mx-auto flex max-w-[1376px] flex-col gap-8 px-4 pb-24 pt-12 sm:px-8">
+        <div>
+          <h1 className="display text-[clamp(40px,5vw,72px)]">Gifts you picked</h1>
+          <p className="mt-3 text-lg text-mute">Everything you reserved or chipped in on, so you don't forget to buy it.</p>
+        </div>
+        {isLoading && <p className="text-mute">Loading…</p>}
+        {isError && <p role="alert" className="bg-ink p-4 font-semibold text-paper">{errorText(error)}</p>}
+        {data?.length === 0 && (
+          <div className="glass flex flex-col items-center gap-3 px-6 py-16 text-center">
+            <p className="display text-3xl">Nothing picked yet</p>
+            <p className="text-mute">When a friend shares a wishlist with you, reserve a gift there and it shows up here.</p>
+          </div>
+        )}
+        <div className="grid gap-x-6 gap-y-8 [grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr))]">
+          {data?.map((item, i) => (
+            <Tag key={item.id}>
+              <ItemTile item={item} index={i} height="h-40" />
+              <div>
+                <h2 className="text-lg font-bold leading-tight">{item.name}</h2>
+                <p className="display text-lg tracking-tight">{item.myContribution ? `You gave ${som(item.myContribution)}` : som(item.price)} soʻm</p>
+              </div>
+              <Link to={`/w/${item.wishlist.slug}`} className="mt-auto border-t-2 border-ink/15 pt-3 font-semibold">
+                {item.wishlist.title}
+                {item.wishlist.eventDate && <span className="block text-sm font-normal text-mute">{longDate(item.wishlist.eventDate)}</span>}
+              </Link>
+            </Tag>
+          ))}
+        </div>
+      </main>
+    </Page>
+  );
+}
