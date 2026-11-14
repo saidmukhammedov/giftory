@@ -8,11 +8,13 @@ import wishlistRoutes from './routes/wishlists.js';
 import itemRoutes from './routes/items.js';
 import imageRoutes from './routes/images.js';
 import telegramRoutes from './routes/telegram.js';
+import analyticsRoutes from './routes/analytics.js';
 
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL || true }));
 app.use(express.json({ limit: '100kb' }));
 
+app.use('/u', analyticsRoutes);
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.use('/api/auth/telegram', telegramRoutes);
 app.use('/api/auth', authRoutes);

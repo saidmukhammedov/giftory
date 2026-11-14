@@ -62,6 +62,13 @@ Logged-in email users can **Connect Telegram** from the account menu, so both lo
 
 Setup: in @BotFather → your bot → **Login Widget**, add both Allowed URLs: the site (`https://your-site`) and the callback (`https://your-site/api/auth/telegram/callback`). Then set `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET` and `PUBLIC_URL` on the server. Without them the button is hidden. The test suite runs the whole flow against a fake Telegram server.
 
+## Analytics
+
+Anonymous, cookieless visit counts with self-hosted [Umami](https://umami.is) (`analytics/Dockerfile`, a separate Render service using its own `umami` database in Neon).
+
+- The tracker loads from Giftory's own domain: `server/src/routes/analytics.js` proxies `/u/script.js` and `/u/api/send` to Umami, so visitors' browsers never contact a third party.
+- It only runs in production builds with `VITE_UMAMI_WEBSITE_ID` set (server needs `UMAMI_URL`). URL fragments are never sent, and browsers with Do Not Track aren't counted.
+
 ## Languages and themes
 
 - **English** (default) and **Russian**, switched in the header and saved per device. All text lives in `client/src/i18n.jsx`, with Russian plural forms (1 желание, 2 желания, 5 желаний). Server error messages are translated on the client by their English text.
