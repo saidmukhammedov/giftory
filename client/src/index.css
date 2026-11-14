@@ -109,6 +109,14 @@
   .bar > span { display: block; height: 100%; background: var(--color-signal); transition: width .5s ease; }
 }
 
+/* Shown before the app starts and while a page downloads. After 8s a hint to reload appears. */
+.boot { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.25rem; padding: 2rem; text-align: center; }
+.boot .display { font-size: 2.5rem; }
+.boot-text { font-size: 1.125rem; }
+.boot-late { opacity: 0; animation: appear .3s 8s forwards; }
+@keyframes appear { to { opacity: 1; } }
+.boot-late a { font-weight: 700; }
+
 @keyframes wrap-in { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
 @keyframes fade-in { from { opacity: 0; } }
 

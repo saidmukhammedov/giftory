@@ -3,21 +3,24 @@ import { useAuth } from './auth';
 import { lazy, Suspense, useEffect } from 'react';
 import Landing from './pages/Landing';
 import { CookieNotice } from './components/Layout';
+import { Boot, reloadOnce } from './components/Boot';
 
-// Each page downloads only when it's first opened
-const Auth = lazy(() => import('./pages/Auth'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Wishlist = lazy(() => import('./pages/Wishlist'));
-const Reserved = lazy(() => import('./pages/Reserved'));
-const NotFound = lazy(() => import('./pages/NotFound'));
-const TelegramCallback = lazy(() => import('./pages/TelegramCallback'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Legal = lazy(() => import('./pages/Legal'));
+// Each page downloads only when it's first opened. If a download fails
+// (a new version went live while the page was open), reload once to get the new files.
+const page = (load) => lazy(() => load().catch((e) => { reloadOnce(); throw e; }));
+const Auth = page(() => import('./pages/Auth'));
+const Dashboard = page(() => import('./pages/Dashboard'));
+const Wishlist = page(() => import('./pages/Wishlist'));
+const Reserved = page(() => import('./pages/Reserved'));
+const NotFound = page(() => import('./pages/NotFound'));
+const TelegramCallback = page(() => import('./pages/TelegramCallback'));
+const Profile = page(() => import('./pages/Profile'));
+const Legal = page(() => import('./pages/Legal'));
 
 function Private({ children }) {
   const { user, ready } = useAuth();
   const location = useLocation();
-  if (!ready) return null;
+  if (!ready) return <Boot />;
   return user ? children : <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />;
 }
 
@@ -26,7 +29,7 @@ export default function App() {
   useEffect(() => window.scrollTo(0, 0), [pathname]);
   return (
     <>
-    <Suspense fallback={null}>
+    <Suspense fallback={<Boot />}>
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Auth mode="login" />} />

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './auth';
 import { PrefsProvider } from './i18n';
 import App from './App';
+import { ErrorBoundary, reloadOnce } from './components/Boot';
 // Fonts are bundled with the app, so no visitor data goes to a font CDN
 import '@fontsource-variable/archivo/wdth.css';
 import '@fontsource-variable/roboto-flex/wdth.css'; // width and weight axes only
@@ -19,10 +20,14 @@ if (umamiId && import.meta.env.PROD) {
   document.head.appendChild(s);
 }
 
+// A file from an older version is gone (new version went live): reload to get the new one
+window.addEventListener('vite:preloadError', (e) => { if (reloadOnce()) e.preventDefault(); });
+
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <PrefsProvider>
         <AuthProvider>
@@ -32,5 +37,6 @@ createRoot(document.getElementById('root')).render(
         </AuthProvider>
       </PrefsProvider>
     </QueryClientProvider>
+    </ErrorBoundary>
   </StrictMode>
 );
