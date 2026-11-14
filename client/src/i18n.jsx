@@ -8,6 +8,7 @@ const en = {
   create: 'Create a wishlist', madeIn: 'Made in Tashkent', createOwn: 'Create your own wishlist', goHome: 'Go to Giftory',
   som: 'soʻm', cancel: 'Cancel', close: 'Close', remove: 'Remove', loading: 'Loading…', optional: '(optional)',
   dark: 'Switch to dark mode', light: 'Switch to light mode', language: 'Language',
+  menu: 'Menu', closeMenu: 'Close menu', theme: 'Theme', darkName: 'Dark', lightName: 'Light', logOut: 'Log out', account: 'Account menu',
   // landing
   heroTitle: 'Wish out loud. Get surprised anyway.',
   heroSub: 'Make a wishlist, share one link, and friends reserve gifts in secret. Nobody doubles up. You never see who picked what.',
@@ -70,6 +71,7 @@ const ru = {
   create: 'Создать вишлист', madeIn: 'Сделано в Ташкенте', createOwn: 'Создайте свой вишлист', goHome: 'На главную',
   som: 'сум', cancel: 'Отмена', close: 'Закрыть', remove: 'Убрать', loading: 'Загрузка…', optional: '(необязательно)',
   dark: 'Включить тёмную тему', light: 'Включить светлую тему', language: 'Язык',
+  menu: 'Меню', closeMenu: 'Закрыть меню', theme: 'Тема', darkName: 'Тёмная', lightName: 'Светлая', logOut: 'Выйти', account: 'Меню аккаунта',
   heroTitle: 'Мечтайте вслух. Удивляйтесь всё равно.',
   heroSub: 'Составьте список желаний, отправьте одну ссылку, и друзья тайно выберут подарки. Никаких повторов. Вы не узнаете, кто что выбрал.',
   demoAria: 'Друг видит фотоаппарат с пометкой «забронировано вами». Вы видите тот же ярлык под плёнкой с лентой.',

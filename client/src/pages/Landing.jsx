@@ -27,7 +27,7 @@ export default function Landing() {
                 <p className="text-lg font-bold">{t('filmCamera')}</p>
                 <p className="display text-lg tracking-tight">1 450 000 {t('som')}</p>
               </div>
-              <span className="btn btn-primary min-h-[46px] whitespace-normal text-center text-[15px]"><Check size={18} /> {t('reservedByYou')}</span>
+              <span className="btn btn-primary min-h-[46px] whitespace-normal px-2 text-center text-[13px] sm:px-3 sm:text-[15px]"><Check size={16} className="hidden shrink-0 sm:block" /> {t('reservedByYou')}</span>
             </Tag>
           </div>
           <div className="absolute right-0 top-[300px] w-[200px] rotate-[7deg] sm:top-[200px] sm:w-[290px] lg:right-2.5 lg:top-[30px]">
