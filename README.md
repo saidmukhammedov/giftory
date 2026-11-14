@@ -50,6 +50,18 @@ The schema lives in `server/src/schema.sql` and is applied on every start (`CREA
 | POST | `/api/images` | ✓ | Upload a photo (raw JPG/PNG/WebP body) → `{ url }` |
 | GET | `/api/images/:id` | | Serve a photo (cached for a year) |
 
+## Telegram login
+
+"Continue with Telegram" uses Telegram's OpenID Connect login (authorization code + PKCE) in `server/src/routes/telegram.js`:
+
+1. `/api/auth/telegram/start` sends the browser to Telegram with a random `state` and PKCE challenge, kept in a short-lived signed cookie.
+2. `/api/auth/telegram/callback` checks `state`, trades the code for an `id_token` (using the client secret), and verifies its signature against Telegram's public keys.
+3. The user is found or created by Telegram ID, and the session token is handed to the app in the URL fragment, so it never reaches server logs.
+
+Logged-in email users can **Connect Telegram** from the account menu, so both log-ins open the same account.
+
+Setup: in @BotFather → your bot → **Login Widget**, add both Allowed URLs: the site (`https://your-site`) and the callback (`https://your-site/api/auth/telegram/callback`). Then set `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET` and `PUBLIC_URL` on the server. Without them the button is hidden. The test suite runs the whole flow against a fake Telegram server.
+
 ## Languages and themes
 
 - **English** (default) and **Russian**, switched in the header and saved per device. All text lives in `client/src/i18n.jsx`, with Russian plural forms (1 желание, 2 желания, 5 желаний). Server error messages are translated on the client by their English text.

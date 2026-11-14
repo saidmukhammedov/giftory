@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Wishlist from './pages/Wishlist';
 import Reserved from './pages/Reserved';
 import NotFound from './pages/NotFound';
+import TelegramCallback from './pages/TelegramCallback';
 
 function Private({ children }) {
   const { user, ready } = useAuth();
@@ -20,6 +21,7 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Auth mode="login" />} />
       <Route path="/signup" element={<Auth mode="signup" />} />
+      <Route path="/auth/telegram" element={<TelegramCallback />} />
       <Route path="/w/:slug" element={<Wishlist />} />
       <Route path="/dashboard" element={<Private><Dashboard /></Private>} />
       <Route path="/reserved" element={<Private><Reserved /></Private>} />

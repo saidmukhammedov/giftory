@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { one } from '../db.js';
 import { requireAuth, signToken } from '../middleware/auth.js';
+import { telegramEnabled } from './telegram.js';
 
 const router = Router();
 
@@ -24,15 +25,18 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   const user = await one('SELECT id, name, email, password_hash FROM users WHERE email = $1', [req.body.email?.trim().toLowerCase()]);
-  if (!user || !(await bcrypt.compare(req.body.password || '', user.password_hash))) {
+  if (!user?.password_hash || !(await bcrypt.compare(req.body.password || '', user.password_hash))) {
     return res.status(401).json({ message: 'Wrong email or password' });
   }
   const { password_hash, ...publicUser } = user;
   res.json({ token: signToken(user.id), user: publicUser });
 });
 
+// Which sign-in options the app should show
+router.get('/providers', (_req, res) => res.json({ telegram: telegramEnabled() }));
+
 router.get('/me', requireAuth, async (req, res) => {
-  const user = await one('SELECT id, name, email FROM users WHERE id = $1', [req.userId]);
+  const user = await one('SELECT id, name, email, avatar_url AS "avatarUrl", telegram_id IS NOT NULL AS telegram FROM users WHERE id = $1', [req.userId]);
   if (!user) return res.status(404).json({ message: 'Account not found' });
   res.json({ user });
 });

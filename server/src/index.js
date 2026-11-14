@@ -7,12 +7,14 @@ import authRoutes from './routes/auth.js';
 import wishlistRoutes from './routes/wishlists.js';
 import itemRoutes from './routes/items.js';
 import imageRoutes from './routes/images.js';
+import telegramRoutes from './routes/telegram.js';
 
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL || true }));
 app.use(express.json({ limit: '100kb' }));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
+app.use('/api/auth/telegram', telegramRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/wishlists', wishlistRoutes);
 app.use('/api/items', itemRoutes);

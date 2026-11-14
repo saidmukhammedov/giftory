@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { TELEGRAM_ERRORS } from '../telegram';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import api from '../api';
 import { useAuth } from '../auth';
@@ -56,6 +57,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const t = useT();
   const [creating, setCreating] = useState(false);
+  const tgError = TELEGRAM_ERRORS[useSearchParams()[0].get('error')];
   const { data: lists, isLoading, isError, error } = useQuery({ queryKey: ['my-lists'], queryFn: () => api.get('/wishlists/mine').then((r) => r.data) });
 
   return (
@@ -70,6 +72,7 @@ export default function Dashboard() {
           {!creating && <button className="btn btn-primary" onClick={() => setCreating(true)}><Plus size={18} /> {t('newList')}</button>}
         </div>
 
+        {tgError && <p role="alert" className="bg-ink p-4 font-semibold text-paper">{t(tgError)}</p>}
         {creating && <NewListForm onCancel={() => setCreating(false)} />}
         {isError && <p role="alert" className="bg-ink p-4 font-semibold text-paper">{t.error(error)}</p>}
         {isLoading && <p className="text-mute">{t('loadingLists')}</p>}

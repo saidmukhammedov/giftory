@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { usePrefs } from '../i18n';
-import { Close, Logo, Menu, Moon, Sun } from './Icons';
+import { Close, Logo, Menu, Moon, Send, Sun } from './Icons';
+import { connectTelegram, useTelegramEnabled } from '../telegram';
 
 // Flat orange/ink shapes that sit behind the glass. Each: [kind, size, css position]
 export function Page({ shapes = [], children }) {
@@ -62,9 +63,21 @@ export function PrefsControls() {
   );
 }
 
-const Avatar = ({ name, className = '' }) => (
-  <span className={`grid size-11 shrink-0 place-items-center rounded-full bg-signal font-black text-black ${className}`}>{name?.[0]?.toUpperCase()}</span>
-);
+// Telegram photo when there is one, otherwise the first letter on orange
+const Avatar = ({ user, className = '' }) =>
+  user.avatarUrl ? (
+    <img src={user.avatarUrl} alt="" className={`size-11 shrink-0 rounded-full object-cover ${className}`} />
+  ) : (
+    <span className={`grid size-11 shrink-0 place-items-center rounded-full bg-signal font-black text-black ${className}`}>{user.name?.[0]?.toUpperCase()}</span>
+  );
+
+function ConnectTelegram({ className }) {
+  const { t } = usePrefs();
+  const enabled = useTelegramEnabled();
+  const { user } = useAuth();
+  if (!enabled || user.telegram) return null;
+  return <button onClick={connectTelegram} className={className}><Send size={18} /> {t('connectTelegram')}</button>;
+}
 
 // Closes a popup on Escape or a click outside it
 function useDismiss(open, close, ref) {
@@ -90,7 +103,7 @@ function AccountMenu({ user, onLogout }) {
   return (
     <div ref={ref} className="relative">
       <button onClick={() => setOpen(!open)} aria-label={t('account')} aria-haspopup="menu" aria-expanded={open} className="cursor-pointer rounded-full">
-        <Avatar name={user.name} className={open ? 'outline-3 outline-offset-2 outline-ink' : ''} />
+        <Avatar user={user} className={open ? 'outline-3 outline-offset-2 outline-ink' : ''} />
       </button>
       {open && (
         <div role="menu" className="absolute right-0 top-full z-50 mt-3 flex w-64 flex-col p-2 bg-paper shadow-[inset_0_0_0_2px_var(--color-ink),0_24px_48px_-20px_rgb(0_0_0/.45)]">
@@ -98,6 +111,7 @@ function AccountMenu({ user, onLogout }) {
             <p className="font-bold">{user.name}</p>
             <p className="truncate text-sm text-mute">{user.email}</p>
           </div>
+          <ConnectTelegram className="mt-1 flex min-h-11 cursor-pointer items-center gap-2 px-3 text-left font-semibold hover:bg-ink hover:text-paper" />
           <button role="menuitem" onClick={onLogout} className="mt-1 min-h-11 cursor-pointer px-3 text-left font-semibold hover:bg-ink hover:text-paper">
             {t('logOut')}
           </button>
@@ -156,7 +170,7 @@ export function Header() {
           {user ? (
             <>
               <div className="flex items-center gap-3">
-                <Avatar name={user.name} />
+                <Avatar user={user} />
                 <div className="min-w-0">
                   <p className="font-bold">{user.name}</p>
                   <p className="truncate text-sm text-mute">{user.email}</p>
@@ -184,6 +198,7 @@ export function Header() {
             </div>
           </div>
 
+          {user && <ConnectTelegram className="btn w-full bg-[#2AABEE] text-black hover:bg-ink hover:text-paper" />}
           {user && <button onClick={logout} className="btn btn-outline w-full">{t('logOut')}</button>}
         </div>
       )}

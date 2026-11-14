@@ -56,3 +56,9 @@ CREATE TABLE IF NOT EXISTS images (
   data       bytea NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Telegram login: accounts can have email+password, Telegram, or both
+ALTER TABLE users ALTER COLUMN email DROP NOT NULL;
+ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_id text UNIQUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url text;

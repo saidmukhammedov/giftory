@@ -8,6 +8,8 @@ const en = {
   create: 'Create a wishlist', madeIn: 'Made in Tashkent', createOwn: 'Create your own wishlist', goHome: 'Go to Giftory',
   som: 'soʻm', cancel: 'Cancel', close: 'Close', remove: 'Remove', loading: 'Loading…', optional: '(optional)',
   dark: 'Switch to dark mode', light: 'Switch to light mode', language: 'Language',
+  continueTelegram: 'Continue with Telegram', orEmail: 'or with email', signingIn: 'Signing you in…', connectTelegram: 'Connect Telegram',
+  tgError: "Telegram login didn't finish. Try again.", tgOff: "Telegram login isn't set up yet.", tgTaken: 'That Telegram account is already linked to another Giftory account.',
   menu: 'Menu', closeMenu: 'Close menu', theme: 'Theme', darkName: 'Dark', lightName: 'Light', logOut: 'Log out', account: 'Account menu',
   // landing
   heroTitle: 'Wish out loud. Get surprised anyway.',
@@ -71,6 +73,8 @@ const ru = {
   create: 'Создать вишлист', madeIn: 'Сделано в Ташкенте', createOwn: 'Создайте свой вишлист', goHome: 'На главную',
   som: 'сум', cancel: 'Отмена', close: 'Закрыть', remove: 'Убрать', loading: 'Загрузка…', optional: '(необязательно)',
   dark: 'Включить тёмную тему', light: 'Включить светлую тему', language: 'Язык',
+  continueTelegram: 'Войти через Telegram', orEmail: 'или по почте', signingIn: 'Входим…', connectTelegram: 'Подключить Telegram',
+  tgError: 'Вход через Telegram не завершён. Попробуйте ещё раз.', tgOff: 'Вход через Telegram пока не настроен.', tgTaken: 'Этот Telegram уже привязан к другому аккаунту Giftory.',
   menu: 'Меню', closeMenu: 'Закрыть меню', theme: 'Тема', darkName: 'Тёмная', lightName: 'Светлая', logOut: 'Выйти', account: 'Меню аккаунта',
   heroTitle: 'Мечтайте вслух. Удивляйтесь всё равно.',
   heroSub: 'Составьте список желаний, отправьте одну ссылку, и друзья тайно выберут подарки. Никаких повторов. Вы не узнаете, кто что выбрал.',

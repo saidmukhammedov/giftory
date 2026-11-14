@@ -2,11 +2,43 @@
 import { spawn } from 'node:child_process';
 import { PGlite } from '@electric-sql/pglite';
 import { PGLiteSocketServer } from '@electric-sql/pglite-socket';
+import http from 'node:http';
+import crypto from 'node:crypto';
+import { generateKeyPair, exportJWK, SignJWT } from 'jose';
+
+// A fake Telegram OAuth server that signs real RS256 id_tokens
+const TG = 'http://127.0.0.1:5066', CLIENT_ID = '123456', SECRET = 's3cret';
+const { publicKey, privateKey } = await generateKeyPair('RS256');
+const jwk = { ...(await exportJWK(publicKey)), kid: 'k1', alg: 'RS256', use: 'sig' };
+const codes = new Map();
+let nextTgUser = { sub: '9001', name: 'Madina Telegram', preferred_username: 'madina', picture: 'https://t.me/i/userpic/madina.jpg' };
+const tgServer = http.createServer(async (req, res) => {
+  const url = new URL(req.url, TG);
+  if (url.pathname === '/.well-known/jwks.json') return res.end(JSON.stringify({ keys: [jwk] }));
+  if (url.pathname === '/auth') {
+    const code = crypto.randomUUID();
+    codes.set(code, { challenge: url.searchParams.get('code_challenge'), user: nextTgUser, redirect: url.searchParams.get('redirect_uri') });
+    res.writeHead(302, { Location: `${url.searchParams.get('redirect_uri')}?code=${code}&state=${url.searchParams.get('state')}` });
+    return res.end();
+  }
+  if (url.pathname === '/token') {
+    let body = ''; for await (const c of req) body += c;
+    const f = new URLSearchParams(body), entry = codes.get(f.get('code'));
+    const pkceOk = entry && crypto.createHash('sha256').update(f.get('code_verifier')).digest('base64url') === entry.challenge;
+    const authOk = req.headers.authorization === 'Basic ' + Buffer.from(`${CLIENT_ID}:${SECRET}`).toString('base64');
+    if (!pkceOk || !authOk || f.get('redirect_uri') !== entry.redirect) { res.writeHead(400); return res.end('{"error":"invalid_grant"}'); }
+    codes.delete(f.get('code'));
+    const id_token = await new SignJWT(entry.user).setProtectedHeader({ alg: 'RS256', kid: 'k1' }).setIssuer(TG).setAudience(CLIENT_ID).setIssuedAt().setExpirationTime('5m').sign(privateKey);
+    return res.end(JSON.stringify({ id_token, token_type: 'Bearer' }));
+  }
+  res.writeHead(404); res.end();
+});
+await new Promise((r) => tgServer.listen(5066, '127.0.0.1', r));
 
 const pgServer = new PGLiteSocketServer({ db: await PGlite.create(), port: 5433, host: '127.0.0.1', maxConnections: 20 });
 await pgServer.start();
 const api = spawn('node', ['src/index.js'], {
-  env: { ...process.env, DATABASE_URL: 'postgresql://postgres@127.0.0.1:5433/postgres', JWT_SECRET: 'test', PORT: '5055' },
+  env: { ...process.env, DATABASE_URL: 'postgresql://postgres@127.0.0.1:5433/postgres', JWT_SECRET: 'test', PORT: '5055', TELEGRAM_OAUTH_URL: TG, TELEGRAM_CLIENT_ID: CLIENT_ID, TELEGRAM_CLIENT_SECRET: SECRET, PUBLIC_URL: 'http://127.0.0.1:5055' },
   stdio: ['ignore', 'pipe', 'inherit'],
 });
 await new Promise((r) => api.stdout.once('data', r));
@@ -85,6 +117,45 @@ ok((await fetch('http://127.0.0.1:5055' + url)).status === 404, 'photo removed w
 ok((await call('GET', '/wishlists/nope')).status === 404 && (await call('POST', '/items/not-a-uuid/reserve', null, a)).status === 404, 'bad ids give 404');
 ok((await call('DELETE', `/wishlists/${list.id}`, null, owner)).status === 204, 'list deleted');
 ok((await call('GET', '/items/reserved/mine', null, b)).data.length === 0, 'delete cascades to items and contributions');
+// Telegram login
+const S = 'http://127.0.0.1:5055';
+async function telegramLogin({ next = '/w/abc', ticket, tamperState = false } = {}) {
+  const start = await fetch(`${S}/api/auth/telegram/start?next=${encodeURIComponent(next)}${ticket ? '&ticket=' + ticket : ''}`, { redirect: 'manual' });
+  const cookie = start.headers.get('set-cookie')?.split(';')[0];
+  const atTg = await fetch(start.headers.get('location'), { redirect: 'manual' });
+  let back = atTg.headers.get('location');
+  if (tamperState) back = back.replace(/state=[^&]+/, 'state=forged');
+  const cb = await fetch(back, { redirect: 'manual', headers: { cookie } });
+  const loc = cb.headers.get('location');
+  const hash = new URLSearchParams(loc.split('#')[1] || '');
+  return { start, loc, token: hash.get('token'), next: hash.get('next') };
+}
+ok((await call('GET', '/auth/providers')).data.telegram === true, 'Telegram login is offered when configured');
+const s1 = await telegramLogin();
+ok(s1.start.headers.get('location').startsWith(TG + '/auth?') && /code_challenge_method=S256/.test(s1.start.headers.get('location')), 'start redirects to Telegram with PKCE');
+ok(s1.token && s1.next === '/w/abc', 'callback returns a session and the page to go back to');
+const me1 = (await call('GET', '/auth/me', null, s1.token)).data.user;
+ok(me1.name === 'Madina Telegram' && me1.telegram && me1.avatarUrl.includes('userpic') && !me1.email, 'new account created from the Telegram profile');
+const s2 = await telegramLogin();
+ok((await call('GET', '/auth/me', null, s2.token)).data.user.id === me1.id, 'logging in again finds the same account');
+ok((await telegramLogin({ tamperState: true })).loc === '/login?error=telegram', 'forged state is rejected');
+ok((await telegramLogin({ next: 'https://evil.example' })).next === '/dashboard', 'outside redirect targets are ignored');
+ok((await call('POST', '/auth/login', { email: '', password: '' })).status === 401, 'Telegram-only account has no password login');
+
+const emailUser = await reg('sardor');
+const { ticket } = (await call('POST', '/auth/telegram/link', null, emailUser)).data;
+nextTgUser = { sub: '9002', name: 'Sardor TG' };
+const linked = await telegramLogin({ ticket });
+const meLinked = (await call('GET', '/auth/me', null, linked.token)).data.user;
+ok(meLinked.email === 'sardor@t.uz' && meLinked.telegram, 'Connect Telegram links it to the existing email account');
+const again = await telegramLogin();
+ok((await call('GET', '/auth/me', null, again.token)).data.user.email === 'sardor@t.uz', 'that Telegram account now logs into the email account');
+nextTgUser = { sub: '9001', name: 'Madina Telegram' };
+const { ticket: t2 } = (await call('POST', '/auth/telegram/link', null, emailUser)).data;
+ok((await telegramLogin({ ticket: t2 })).loc === '/dashboard?error=telegram_taken', "can't connect a Telegram account that another account already uses");
+ok((await call('POST', '/auth/telegram/link')).status === 401, 'connecting requires being logged in');
+tgServer.close();
+
 console.log(`\n${pass} passed, ${failN} failed`);
 api.kill();
 await pgServer.stop();

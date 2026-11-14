@@ -5,14 +5,18 @@ import api from '../api';
 import { useAuth } from '../auth';
 import { useT } from '../i18n';
 import { Page, PrefsControls } from '../components/Layout';
-import { Bow, Logo } from '../components/Icons';
+import { Bow, Logo, Send } from '../components/Icons';
+import { useTelegramEnabled, telegramLoginUrl, TELEGRAM_ERRORS } from '../telegram';
 
 export default function Auth({ mode }) {
   const signup = mode === 'signup';
   const { user, signIn } = useAuth();
   const t = useT();
   const navigate = useNavigate();
-  const next = useSearchParams()[0].get('next') || '/dashboard';
+  const [params] = useSearchParams();
+  const next = params.get('next') || '/dashboard';
+  const tgError = TELEGRAM_ERRORS[params.get('error')];
+  const telegram = useTelegramEnabled();
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [showPw, setShowPw] = useState(false);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
@@ -41,6 +45,17 @@ export default function Auth({ mode }) {
               <h1 className="display text-5xl">{t(signup ? 'signupTitle' : 'loginTitle')}</h1>
               <p className="mt-3 text-lg text-mute">{t(signup ? 'signupSub' : 'loginSub')}</p>
             </div>
+            {tgError && <p role="alert" className="bg-ink p-3 font-semibold text-paper">{t(tgError)}</p>}
+            {telegram && (
+              <>
+                <a href={telegramLoginUrl(next)} className="btn min-h-14 bg-[#2AABEE] text-black no-underline hover:bg-ink hover:text-paper">
+                  <Send size={20} /> {t('continueTelegram')}
+                </a>
+                <div className="flex items-center gap-3 text-sm font-semibold text-mute" aria-hidden="true">
+                  <span className="h-0.5 flex-1 bg-ink/15" /> {t('orEmail')} <span className="h-0.5 flex-1 bg-ink/15" />
+                </div>
+              </>
+            )}
             {signup && (
               <label className="flex flex-col gap-2 font-bold">
                 {t('yourName')}
