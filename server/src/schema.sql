@@ -47,3 +47,12 @@ CREATE TABLE IF NOT EXISTS contributions (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS contributions_item_idx ON contributions (item_id);
+
+-- Wish photos, compressed in the browser (WebP, max 1200px) before upload
+CREATE TABLE IF NOT EXISTS images (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id   uuid NOT NULL REFERENCES users ON DELETE CASCADE,
+  mime       text NOT NULL,
+  data       bytea NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);

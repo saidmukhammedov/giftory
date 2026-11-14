@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { query, one, updates } from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { ITEM_COLUMNS, fail, ownedList, serializeItems } from './wishlists.js';
+import { removeImages } from './images.js';
 
 const router = Router();
 const single = async (item, userId) => (await serializeItems([item], userId))[0];
@@ -33,13 +34,16 @@ router.patch('/:id', requireAuth, async (req, res) => {
   await ownedList(item.wishlist_id, req.userId);
   const { sql, values } = updates(req.body, ITEM_COLUMNS, 2);
   if (!sql) throw fail(400, 'Nothing to update');
-  res.json(await single(await one(`UPDATE items SET ${sql}, updated_at = now() WHERE id = $1 RETURNING *`, [req.params.id, ...values]), null));
+  const updated = await one(`UPDATE items SET ${sql}, updated_at = now() WHERE id = $1 RETURNING *`, [req.params.id, ...values]);
+  if (updated.image !== item.image) await removeImages([item.image]);
+  res.json(await single(updated, null));
 });
 
 router.delete('/:id', requireAuth, async (req, res) => {
   const item = await findItem(req.params.id);
   await ownedList(item.wishlist_id, req.userId);
   await query('DELETE FROM items WHERE id = $1', [req.params.id]);
+  await removeImages([item.image]);
   res.status(204).end();
 });
 

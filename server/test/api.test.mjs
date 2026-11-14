@@ -69,6 +69,19 @@ ok(res.some((i) => i.id === esp.id) && res.every((i) => i.wishlist.slug === list
 
 ok((await call('PATCH', `/items/${cam.id}`, { price: 1300000 }, owner)).data.price === 1300000, 'owner edits a wish');
 ok((await call('PATCH', `/wishlists/${list.id}`, { note: 'Thanks!' }, owner)).status === 200, 'owner edits list');
+// Photos
+const png = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da63f8ffff3f0005fe02fea7d6a4510000000049454e44ae426082', 'hex');
+const up = await fetch(B + '/images', { method: 'POST', headers: { 'content-type': 'image/png', authorization: 'Bearer ' + owner }, body: png });
+const { url } = await up.json();
+ok(up.status === 201 && url.startsWith('/api/images/'), 'photo uploaded');
+const got = await fetch('http://127.0.0.1:5055' + url);
+ok(got.status === 200 && got.headers.get('content-type') === 'image/png' && Buffer.from(await got.arrayBuffer()).equals(png), 'photo served back byte-for-byte');
+ok((await fetch(B + '/images', { method: 'POST', headers: { 'content-type': 'image/png' }, body: png })).status === 401, 'anonymous cannot upload');
+ok((await fetch(B + '/images', { method: 'POST', headers: { 'content-type': 'text/plain', authorization: 'Bearer ' + owner }, body: 'hi' })).status === 400, 'non-image rejected');
+const withPhoto = (await call('POST', `/wishlists/${list.id}/items`, { name: 'Lamp', price: 5, image: url }, owner)).data;
+ok(withPhoto.image === url, 'wish saved with uploaded photo');
+await call('DELETE', `/items/${withPhoto.id}`, null, owner);
+ok((await fetch('http://127.0.0.1:5055' + url)).status === 404, 'photo removed with its wish');
 ok((await call('GET', '/wishlists/nope')).status === 404 && (await call('POST', '/items/not-a-uuid/reserve', null, a)).status === 404, 'bad ids give 404');
 ok((await call('DELETE', `/wishlists/${list.id}`, null, owner)).status === 204, 'list deleted');
 ok((await call('GET', '/items/reserved/mine', null, b)).data.length === 0, 'delete cascades to items and contributions');

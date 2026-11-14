@@ -1,13 +1,29 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api, { errorText } from '../api';
-import { Close } from './Icons';
+import { som } from '../utils';
+import { Photo } from './Tag';
+import { Close, Gift } from './Icons';
 
 const PRIORITIES = [['low', 'Nice to have'], ['medium', 'Would love it'], ['high', 'Really want it']];
+
+// Shrink the photo on the device before uploading: max 1200px, WebP (JPEG where WebP isn't supported)
+async function compress(file) {
+  const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  const scale = Math.min(1, 1200 / Math.max(bmp.width, bmp.height));
+  const canvas = Object.assign(document.createElement('canvas'), { width: Math.round(bmp.width * scale), height: Math.round(bmp.height * scale) });
+  canvas.getContext('2d').drawImage(bmp, 0, 0, canvas.width, canvas.height);
+  const toBlob = (type) => new Promise((r) => canvas.toBlob(r, type, 0.82));
+  const webp = await toBlob('image/webp');
+  return webp?.type === 'image/webp' ? webp : toBlob('image/jpeg');
+}
 
 export default function AddItemModal({ list, onClose }) {
   const qc = useQueryClient();
   const [form, setForm] = useState({ name: '', price: '', link: '', image: '', note: '', priority: 'medium', isGroupGift: false });
+  const [linkMode, setLinkMode] = useState(false);
+  const [imageLink, setImageLink] = useState('');
+  const [dragging, setDragging] = useState(false);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   useEffect(() => {
@@ -16,13 +32,25 @@ export default function AddItemModal({ list, onClose }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
+  const upload = useMutation({
+    mutationFn: async (file) => {
+      if (!file?.type.startsWith('image/')) throw new Error('Choose a photo file');
+      const blob = await compress(file).catch(() => { throw new Error("Couldn't read that photo. Try a JPG or PNG."); });
+      return (await api.post('/images', blob, { headers: { 'Content-Type': blob.type } })).data.url;
+    },
+    onSuccess: (url) => setForm((f) => ({ ...f, image: url })),
+  });
+
   const add = useMutation({
-    mutationFn: () => api.post(`/wishlists/${list.id}/items`, { ...form, price: Number(String(form.price).replace(/\s/g, '')) }),
+    mutationFn: () => api.post(`/wishlists/${list.id}/items`, { ...form, price: Number(form.price) }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['wishlist', list.slug] });
       onClose();
     },
   });
+
+  const pick = (e) => upload.mutate(e.target.files?.[0]);
+  const drop = (e) => { e.preventDefault(); setDragging(false); upload.mutate(e.dataTransfer.files?.[0]); };
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-ink/30" onClick={onClose}>
@@ -45,6 +73,46 @@ export default function AddItemModal({ list, onClose }) {
         </div>
 
         <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-7 py-6">
+          <fieldset className="flex flex-col gap-2.5">
+            <legend className="mb-2 font-bold">Photo <span className="font-normal text-mute">(optional)</span></legend>
+
+            {form.image ? (
+              <div className="flex flex-col gap-2.5">
+                <Photo src={form.image} className="relative aspect-[4/3] outline-2 outline-ink" />
+                <div className="flex gap-2.5">
+                  <label className="btn btn-outline min-h-11 flex-1 cursor-pointer text-sm">
+                    Change photo
+                    <input type="file" accept="image/*" className="sr-only" onChange={pick} />
+                  </label>
+                  <button type="button" className="btn btn-outline min-h-11 flex-1 text-sm" onClick={() => setForm({ ...form, image: '' })}>Remove</button>
+                </div>
+              </div>
+            ) : (
+              <label
+                onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={drop}
+                className={`relative flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-3 p-6 text-center shadow-[inset_0_0_0_2px_#000] focus-within:outline-3 focus-within:outline-signal ${dragging ? 'bg-signal/20' : 'bg-white/50 hover:bg-white'}`}
+              >
+                <input type="file" accept="image/*" className="sr-only" onChange={pick} disabled={upload.isPending} />
+                <span className="grid size-16 place-items-center rounded-full bg-signal"><Gift size={30} /></span>
+                <span className="text-lg font-bold">{upload.isPending ? 'Uploading…' : 'Choose from gallery'}</span>
+                <span className="text-sm text-mute">Any photo, tall or wide. We shrink it before uploading.</span>
+              </label>
+            )}
+
+            {upload.isError && <p role="alert" className="bg-ink p-3 text-sm font-semibold text-paper">{upload.error.response ? errorText(upload.error) : upload.error.message}</p>}
+
+            {!form.image && (linkMode ? (
+              <div className="flex gap-2">
+                <input className="input min-w-0 flex-1" type="url" autoFocus value={imageLink} onChange={(e) => setImageLink(e.target.value)} placeholder="https://…/photo.jpg" aria-label="Image link" />
+                <button type="button" className="btn btn-primary px-5" disabled={!imageLink} onClick={() => setForm({ ...form, image: imageLink })}>Use</button>
+              </div>
+            ) : (
+              <button type="button" className="min-h-11 self-start text-sm font-semibold underline" onClick={() => setLinkMode(true)}>Or paste an image link instead</button>
+            ))}
+          </fieldset>
+
           <div className="grid gap-3 sm:grid-cols-[1.4fr_1fr]">
             <label className="flex flex-col gap-2 font-bold">
               Name
@@ -52,19 +120,23 @@ export default function AddItemModal({ list, onClose }) {
             </label>
             <label className="flex flex-col gap-2 font-bold">
               Price, soʻm
-              <input className="input font-normal" required inputMode="numeric" value={form.price} onChange={set('price')} placeholder="1 450 000" />
+              <input
+                className="input font-normal"
+                required
+                inputMode="numeric"
+                value={form.price === '' ? '' : som(form.price)}
+                onChange={(e) => setForm({ ...form, price: e.target.value.replace(/\D/g, '').slice(0, 12) })}
+                placeholder="1 450 000"
+              />
             </label>
           </div>
           <label className="flex flex-col gap-2 font-bold">
-            Link to the item <span className="text-sm font-normal text-mute">Optional. Friends will see an “Open in store” link.</span>
+            <span>Link to the product <span className="font-normal text-mute">(optional)</span></span>
+            <span className="-mt-1 text-sm font-normal text-mute">Friends will see an “Open in store” link.</span>
             <input className="input font-normal" type="url" value={form.link} onChange={set('link')} placeholder="https://" />
           </label>
           <label className="flex flex-col gap-2 font-bold">
-            Photo link <span className="text-sm font-normal text-mute">Optional. Paste an image address from the store page.</span>
-            <input className="input font-normal" type="url" value={form.image} onChange={set('image')} placeholder="https://…/photo.jpg" />
-          </label>
-          <label className="flex flex-col gap-2 font-bold">
-            Note for friends <span className="text-sm font-normal text-mute">Optional</span>
+            <span>Note for friends <span className="font-normal text-mute">(optional)</span></span>
             <textarea className="input min-h-24 py-3 font-normal" value={form.note} onChange={set('note')} placeholder="Size, color, any model is fine…" />
           </label>
 
@@ -101,7 +173,7 @@ export default function AddItemModal({ list, onClose }) {
 
         <div className="flex justify-end gap-3 border-t-2 border-ink px-7 py-5">
           <button type="button" onClick={onClose} className="btn btn-outline">Cancel</button>
-          <button className="btn btn-primary" disabled={add.isPending}>{add.isPending ? 'Adding…' : 'Add to list'}</button>
+          <button className="btn btn-primary" disabled={add.isPending || upload.isPending}>{add.isPending ? 'Adding…' : 'Add to list'}</button>
         </div>
       </form>
     </div>

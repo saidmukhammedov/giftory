@@ -6,6 +6,7 @@ import { migrate } from './db.js';
 import authRoutes from './routes/auth.js';
 import wishlistRoutes from './routes/wishlists.js';
 import itemRoutes from './routes/items.js';
+import imageRoutes from './routes/images.js';
 
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL || true }));
@@ -15,6 +16,7 @@ app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/wishlists', wishlistRoutes);
 app.use('/api/items', itemRoutes);
+app.use('/api/images', imageRoutes);
 
 // In production, serve the built React app from ../client/dist
 const dist = path.resolve(import.meta.dirname, '../../client/dist');
@@ -26,6 +28,7 @@ if (fs.existsSync(dist)) {
 app.use((err, _req, res, _next) => {
   if (err.code === '22P02') return res.status(404).json({ message: 'Not found' }); // malformed id
   if (err.code === '23514' || err.code === '22007') return res.status(400).json({ message: 'Check the values you entered' });
+  if (err.type === 'entity.too.large') return res.status(413).json({ message: 'That photo is too big. Try a smaller one.' });
   if (!err.status) console.error(err);
   res.status(err.status || 500).json({ message: err.status ? err.message : 'Something went wrong on our side' });
 });

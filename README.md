@@ -47,6 +47,12 @@ The schema lives in `server/src/schema.sql` and is applied on every start (`CREA
 | POST / DELETE | `/api/items/:id/reserve` | friend | Reserve / cancel |
 | POST | `/api/items/:id/contribute` | friend | Chip in on a group gift `{ amount }` |
 | GET | `/api/items/reserved/mine` | ✓ | Gifts I picked or chipped in on |
+| POST | `/api/images` | ✓ | Upload a photo (raw JPG/PNG/WebP body) → `{ url }` |
+| GET | `/api/images/:id` | | Serve a photo (cached for a year) |
+
+## Photos
+
+Wishes take a photo from the device gallery (or an image link). The browser shrinks it to at most 1200px WebP before upload, so photos are usually 100–200 KB and stored in Postgres (`images` table). Every photo shows in the same 4:3 frame without cropping: the full photo sits on a blurred copy of itself, so tall and wide photos line up.
 
 ## Deploy
 
@@ -56,6 +62,5 @@ The schema lives in `server/src/schema.sql` and is applied on every start (`CREA
 
 ## Next up
 
-- Photo uploads (Cloudinary) instead of pasting an image link
 - "Fill in from link": pull name, price and photo from a store page
 - Email or Telegram notice when someone picks a gift

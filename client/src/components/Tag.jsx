@@ -11,15 +11,23 @@ export function Tag({ className = '', children }) {
   );
 }
 
-// The item's picture. When wrapped, it frosts over and gets the ribbon.
-export function ItemTile({ item, index = 0, wrapped, hideImage, height = 'h-44' }) {
+// Every photo gets the same 4:3 frame. The whole photo is shown (never cropped),
+// and a blurred, zoomed copy of it fills the empty space, so tall and wide photos both fit.
+export function Photo({ src, className = 'relative' }) {
   return (
-    <div className={`relative grid ${height} place-items-center overflow-hidden ${tileColor(index)}`}>
-      {item.image && !hideImage ? (
-        <img src={item.image} alt="" className="absolute inset-0 size-full object-cover" />
-      ) : (
-        <Gift size={60} />
-      )}
+    <div className={`isolate overflow-hidden bg-stone ${className}`}>
+      <img src={src} alt="" aria-hidden="true" className="absolute inset-0 size-full scale-125 object-cover opacity-70 blur-2xl" />
+      <img src={src} alt="" className="relative size-full object-contain" loading="lazy" />
+    </div>
+  );
+}
+
+// The item's picture. When wrapped, it frosts over and gets the ribbon.
+export function ItemTile({ item, index = 0, wrapped, hideImage, className = 'aspect-[4/3]' }) {
+  const showPhoto = item.image && !hideImage;
+  return (
+    <div className={`relative grid place-items-center overflow-hidden ${showPhoto ? '' : tileColor(index)} ${className}`}>
+      {showPhoto ? <Photo src={item.image} className="absolute inset-0" /> : <Gift size={60} />}
       {wrapped && (
         <div className="frost">
           <Bow />

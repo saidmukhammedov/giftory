@@ -27,7 +27,7 @@ export default function Reserved() {
         <div className="grid gap-x-6 gap-y-8 [grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr))]">
           {data?.map((item, i) => (
             <Tag key={item.id}>
-              <ItemTile item={item} index={i} height="h-40" />
+              <ItemTile item={item} index={i} />
               <div>
                 <h2 className="text-lg font-bold leading-tight">{item.name}</h2>
                 <p className="display text-lg tracking-tight">{item.myContribution ? `You gave ${som(item.myContribution)}` : som(item.price)} soʻm</p>

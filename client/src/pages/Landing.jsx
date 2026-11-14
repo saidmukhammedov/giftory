@@ -25,7 +25,7 @@ export default function Landing() {
           <div className="absolute left-0 top-[40px] w-[200px] -rotate-6 sm:top-[150px] sm:w-[280px]">
             <span className="mb-3 ml-2 inline-block bg-ink px-2.5 py-1 text-[13px] font-bold text-paper">What your friend sees</span>
             <Tag>
-              <ItemTile item={{}} index={1} height="h-40" />
+              <ItemTile item={{}} index={1} />
               <div>
                 <p className="text-lg font-bold">Film camera</p>
                 <p className="display text-lg tracking-tight">1 450 000 soʻm</p>
@@ -36,7 +36,7 @@ export default function Landing() {
           <div className="absolute right-0 top-[300px] w-[200px] rotate-[7deg] sm:top-[200px] sm:w-[290px] lg:right-2.5 lg:top-[30px]">
             <span className="mb-3 ml-2 inline-block bg-signal px-2.5 py-1 text-[13px] font-bold">What you see</span>
             <Tag>
-              <ItemTile item={{}} index={1} height="h-40" wrapped />
+              <ItemTile item={{}} index={1} wrapped />
               <div>
                 <p className="text-lg font-bold">A friend picked this</p>
                 <p className="text-mute">You'll find out on the day.</p>
@@ -81,7 +81,7 @@ export default function Landing() {
           </div>
           <div className="glass-dark flex flex-col gap-6 p-8" role="img" aria-label="Group gift: espresso machine, 4 800 000 soʻm, 2 900 000 raised by three friends.">
             <div className="flex items-center gap-4">
-              <ItemTile item={{}} index={0} height="h-20 w-20 shrink-0" />
+              <ItemTile item={{}} index={0} className="size-20 shrink-0" />
               <div>
                 <span className="bg-signal px-2.5 py-1 text-[13px] font-bold text-ink">Group gift</span>
                 <p className="mt-2 text-2xl font-bold">Espresso machine</p>

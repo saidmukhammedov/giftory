@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { Router } from 'express';
 import { query, one, updates } from '../db.js';
 import { requireAuth, optionalAuth } from '../middleware/auth.js';
+import { removeImages } from './images.js';
 
 const router = Router();
 export const fail = (status, message) => Object.assign(new Error(message), { status });
@@ -90,7 +91,9 @@ router.patch('/:id', requireAuth, async (req, res) => {
 
 router.delete('/:id', requireAuth, async (req, res) => {
   await ownedList(req.params.id, req.userId);
-  await query('DELETE FROM wishlists WHERE id = $1', [req.params.id]); // items and contributions cascade
+  const items = await query('DELETE FROM items WHERE wishlist_id = $1 RETURNING image', [req.params.id]);
+  await query('DELETE FROM wishlists WHERE id = $1', [req.params.id]); // contributions cascade with items
+  await removeImages(items.map((i) => i.image));
   res.status(204).end();
 });
 

@@ -259,7 +259,7 @@ function OwnerView({ wishlist, items }) {
             const hidden = !item.isGroupGift && item.isReserved;
             return (
               <Tag key={item.id} className="pb-3.5">
-                <ItemTile item={item} index={index} wrapped={hidden} hideImage={hidden} height="h-40" />
+                <ItemTile item={item} index={index} wrapped={hidden} hideImage={hidden} />
                 {hidden ? (
                   <div>
                     <h2 className="text-lg font-bold">A friend picked this</h2>
