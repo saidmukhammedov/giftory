@@ -145,7 +145,7 @@ export function Header() {
           aria-expanded={menu}
           aria-controls="mobile-menu"
           aria-label={t(menu ? 'closeMenu' : 'menu')}
-          className={`grid size-11 cursor-pointer place-items-center lg:hidden ${menu ? 'bg-ink text-paper' : box}`}
+          className="grid size-11 cursor-pointer place-items-center hover:text-signal lg:hidden"
         >
           {menu ? <Close /> : <Menu />}
         </button>
