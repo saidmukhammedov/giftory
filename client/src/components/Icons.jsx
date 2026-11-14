@@ -6,18 +6,20 @@ const Svg = ({ size = 20, sw = 2, children, ...p }) => (
 
 export const Logo = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M2 12 8.5 5H22v14H8.5z" fill="#000" />
-    <circle cx="9.5" cy="12" r="1.9" fill="#F4F4F1" />
+    <path d="M2 12 8.5 5H22v14H8.5z" className="fill-ink" />
+    <circle cx="9.5" cy="12" r="1.9" className="fill-paper" />
     <path d="M16 5v14" stroke="#FF4D00" strokeWidth="2.6" />
   </svg>
 );
 
 export const Bow = ({ width = 72 }) => (
   <svg width={width} height={width * 0.62} viewBox="0 0 64 40" aria-hidden="true">
-    <path d="M32 20C20 3 5 6 7 18c2 12 16 8 25 2z" fill="#FF4D00" stroke="#000" strokeWidth="2" />
-    <path d="M32 20C44 3 59 6 57 18c-2 12-16 8-25 2z" fill="#FF4D00" stroke="#000" strokeWidth="2" />
-    <path d="M29 22 22 37M35 22l7 15" stroke="#000" strokeWidth="2" />
-    <circle cx="32" cy="20" r="5.5" fill="#FF4D00" stroke="#000" strokeWidth="2" />
+    <g className="stroke-ink" strokeWidth="2">
+      <path d="M32 20C20 3 5 6 7 18c2 12 16 8 25 2z" fill="#FF4D00" />
+      <path d="M32 20C44 3 59 6 57 18c-2 12-16 8-25 2z" fill="#FF4D00" />
+      <path d="M29 22 22 37M35 22l7 15" />
+      <circle cx="32" cy="20" r="5.5" fill="#FF4D00" />
+    </g>
   </svg>
 );
 
@@ -30,3 +32,5 @@ export const External = (p) => <Svg size={15} sw={2.2} {...p}><path d="M14 4h6v6
 export const Send = (p) => <Svg {...p}><path d="m21 4-18 7 6 2 2 6 3-4 5 4z" /><path d="m9 13 12-9" /></Svg>;
 export const Back = (p) => <Svg size={16} sw={2.4} {...p}><path d="M15 5 8 12l7 7" /></Svg>;
 export const Close = (p) => <Svg sw={2.4} {...p}><path d="M6 6l12 12M18 6 6 18" /></Svg>;
+export const Sun = (p) => <Svg {...p}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></Svg>;
+export const Moon = (p) => <Svg {...p}><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" /></Svg>;

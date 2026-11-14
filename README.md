@@ -50,6 +50,12 @@ The schema lives in `server/src/schema.sql` and is applied on every start (`CREA
 | POST | `/api/images` | ✓ | Upload a photo (raw JPG/PNG/WebP body) → `{ url }` |
 | GET | `/api/images/:id` | | Serve a photo (cached for a year) |
 
+## Languages and themes
+
+- **English** (default) and **Russian**, switched in the header and saved per device. All text lives in `client/src/i18n.jsx`, with Russian plural forms (1 желание, 2 желания, 5 желаний). Server error messages are translated on the client by their English text.
+- **Light** (default) and **dark** themes. Colors are CSS variables in `client/src/index.css`; dark mode swaps them under `.dark`. The saved theme is applied before the page paints, so there is no flash.
+- Headings use Archivo; Cyrillic letters fall back to Roboto Flex, which has the same width and weight range.
+
 ## Photos
 
 Wishes take a photo from the device gallery (or an image link). The browser shrinks it to at most 1200px WebP before upload, so photos are usually 100–200 KB and stored in Postgres (`images` table). Every photo shows in the same 4:3 frame without cropping: the full photo sits on a blurred copy of itself, so tall and wide photos line up.

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import api, { errorText } from '../api';
+import api from '../api';
+import { useT } from '../i18n';
 import { som } from '../utils';
 import { Photo } from './Tag';
 import { Close, Gift } from './Icons';
 
-const PRIORITIES = [['low', 'Nice to have'], ['medium', 'Would love it'], ['high', 'Really want it']];
+const PRIORITIES = ['low', 'medium', 'high'];
 
 // Shrink the photo on the device before uploading: max 1200px, WebP (JPEG where WebP isn't supported)
 async function compress(file) {
@@ -20,6 +21,7 @@ async function compress(file) {
 
 export default function AddItemModal({ list, onClose }) {
   const qc = useQueryClient();
+  const t = useT();
   const [form, setForm] = useState({ name: '', price: '', link: '', image: '', note: '', priority: 'medium', isGroupGift: false });
   const [linkMode, setLinkMode] = useState(false);
   const [imageLink, setImageLink] = useState('');
@@ -64,27 +66,27 @@ export default function AddItemModal({ list, onClose }) {
       >
         <div className="flex items-start justify-between gap-4 border-b-2 border-ink px-7 py-6">
           <div>
-            <h2 id="add-title" className="display text-4xl">Add a wish</h2>
-            <p className="mt-1 text-mute">To {list.title}</p>
+            <h2 id="add-title" className="display text-4xl">{t('addWish')}</h2>
+            <p className="mt-1 text-mute">{t('toList', { t: list.title })}</p>
           </div>
-          <button type="button" onClick={onClose} className="btn btn-outline size-11 min-h-0 p-0" aria-label="Close">
+          <button type="button" onClick={onClose} className="btn btn-outline size-11 min-h-0 p-0" aria-label={t('close')}>
             <Close />
           </button>
         </div>
 
         <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-7 py-6">
           <fieldset className="flex flex-col gap-2.5">
-            <legend className="mb-2 font-bold">Photo <span className="font-normal text-mute">(optional)</span></legend>
+            <legend className="mb-2 font-bold">{t('photo')} <span className="font-normal text-mute">{t('optional')}</span></legend>
 
             {form.image ? (
               <div className="flex flex-col gap-2.5">
                 <Photo src={form.image} className="relative aspect-[4/3] outline-2 outline-ink" />
                 <div className="flex gap-2.5">
                   <label className="btn btn-outline min-h-11 flex-1 cursor-pointer text-sm">
-                    Change photo
+                    {t('changePhoto')}
                     <input type="file" accept="image/*" className="sr-only" onChange={pick} />
                   </label>
-                  <button type="button" className="btn btn-outline min-h-11 flex-1 text-sm" onClick={() => setForm({ ...form, image: '' })}>Remove</button>
+                  <button type="button" className="btn btn-outline min-h-11 flex-1 text-sm" onClick={() => setForm({ ...form, image: '' })}>{t('remove')}</button>
                 </div>
               </div>
             ) : (
@@ -92,34 +94,34 @@ export default function AddItemModal({ list, onClose }) {
                 onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={drop}
-                className={`relative flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-3 p-6 text-center shadow-[inset_0_0_0_2px_#000] focus-within:outline-3 focus-within:outline-signal ${dragging ? 'bg-signal/20' : 'bg-white/50 hover:bg-white'}`}
+                className={`relative flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-3 p-6 text-center shadow-[inset_0_0_0_2px_var(--color-ink)] focus-within:outline-3 focus-within:outline-signal ${dragging ? 'bg-signal/20' : 'bg-field hover:bg-paper'}`}
               >
                 <input type="file" accept="image/*" className="sr-only" onChange={pick} disabled={upload.isPending} />
-                <span className="grid size-16 place-items-center rounded-full bg-signal"><Gift size={30} /></span>
-                <span className="text-lg font-bold">{upload.isPending ? 'Uploading…' : 'Choose from gallery'}</span>
-                <span className="text-sm text-mute">Any photo, tall or wide. We shrink it before uploading.</span>
+                <span className="grid size-16 place-items-center rounded-full bg-signal text-black"><Gift size={30} /></span>
+                <span className="text-lg font-bold">{t(upload.isPending ? 'uploading' : 'chooseGallery')}</span>
+                <span className="text-sm text-mute">{t('photoHint')}</span>
               </label>
             )}
 
-            {upload.isError && <p role="alert" className="bg-ink p-3 text-sm font-semibold text-paper">{upload.error.response ? errorText(upload.error) : upload.error.message}</p>}
+            {upload.isError && <p role="alert" className="bg-ink p-3 text-sm font-semibold text-paper">{t.error(upload.error)}</p>}
 
             {!form.image && (linkMode ? (
               <div className="flex gap-2">
-                <input className="input min-w-0 flex-1" type="url" autoFocus value={imageLink} onChange={(e) => setImageLink(e.target.value)} placeholder="https://…/photo.jpg" aria-label="Image link" />
-                <button type="button" className="btn btn-primary px-5" disabled={!imageLink} onClick={() => setForm({ ...form, image: imageLink })}>Use</button>
+                <input className="input min-w-0 flex-1" type="url" autoFocus value={imageLink} onChange={(e) => setImageLink(e.target.value)} placeholder="https://…/photo.jpg" aria-label={t('imageLink')} />
+                <button type="button" className="btn btn-primary px-5" disabled={!imageLink} onClick={() => setForm({ ...form, image: imageLink })}>{t('use')}</button>
               </div>
             ) : (
-              <button type="button" className="min-h-11 self-start text-sm font-semibold underline" onClick={() => setLinkMode(true)}>Or paste an image link instead</button>
+              <button type="button" className="min-h-11 self-start text-sm font-semibold underline" onClick={() => setLinkMode(true)}>{t('pasteLink')}</button>
             ))}
           </fieldset>
 
           <div className="grid gap-3 sm:grid-cols-[1.4fr_1fr]">
             <label className="flex flex-col gap-2 font-bold">
-              Name
-              <input className="input font-normal" required value={form.name} onChange={set('name')} placeholder="Film camera" />
+              {t('itemName')}
+              <input className="input font-normal" required value={form.name} onChange={set('name')} placeholder={t('itemNamePh')} />
             </label>
             <label className="flex flex-col gap-2 font-bold">
-              Price, soʻm
+              {t('price')}
               <input
                 className="input font-normal"
                 required
@@ -131,21 +133,21 @@ export default function AddItemModal({ list, onClose }) {
             </label>
           </div>
           <label className="flex flex-col gap-2 font-bold">
-            <span>Link to the product <span className="font-normal text-mute">(optional)</span></span>
-            <span className="-mt-1 text-sm font-normal text-mute">Friends will see an “Open in store” link.</span>
+            <span>{t('productLink')} <span className="font-normal text-mute">{t('optional')}</span></span>
+            <span className="-mt-1 text-sm font-normal text-mute">{t('productLinkHint')}</span>
             <input className="input font-normal" type="url" value={form.link} onChange={set('link')} placeholder="https://" />
           </label>
           <label className="flex flex-col gap-2 font-bold">
-            <span>Note for friends <span className="font-normal text-mute">(optional)</span></span>
-            <textarea className="input min-h-24 py-3 font-normal" value={form.note} onChange={set('note')} placeholder="Size, color, any model is fine…" />
+            <span>{t('itemNote')} <span className="font-normal text-mute">{t('optional')}</span></span>
+            <textarea className="input min-h-24 py-3 font-normal" value={form.note} onChange={set('note')} placeholder={t('itemNotePh')} />
           </label>
 
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 font-bold">How much do you want it?</legend>
-            <div className="flex gap-1 bg-white/50 p-1 shadow-[inset_0_0_0_2px_#000]">
-              {PRIORITIES.map(([v, label]) => (
+            <legend className="mb-2 font-bold">{t('howMuch')}</legend>
+            <div className="flex gap-1 bg-field p-1 shadow-[inset_0_0_0_2px_var(--color-ink)]">
+              {PRIORITIES.map((v) => (
                 <button key={v} type="button" aria-pressed={form.priority === v} onClick={() => setForm({ ...form, priority: v })} className="chip flex-1 px-2 text-sm shadow-none">
-                  {label}
+                  {t.prio(v)}
                 </button>
               ))}
             </div>
@@ -153,8 +155,8 @@ export default function AddItemModal({ list, onClose }) {
 
           <div className="glass flex items-center justify-between gap-4 p-4">
             <div>
-              <p id="group-label" className="font-bold">Let friends chip in together</p>
-              <p className="text-sm text-mute">Good for bigger gifts. Friends add any amount until it's covered.</p>
+              <p id="group-label" className="font-bold">{t('groupToggle')}</p>
+              <p className="text-sm text-mute">{t('groupToggleHint')}</p>
             </div>
             <button
               type="button"
@@ -168,12 +170,12 @@ export default function AddItemModal({ list, onClose }) {
             </button>
           </div>
 
-          {add.isError && <p role="alert" className="bg-ink p-3 font-semibold text-paper">{errorText(add.error)}</p>}
+          {add.isError && <p role="alert" className="bg-ink p-3 font-semibold text-paper">{t.error(add.error)}</p>}
         </div>
 
         <div className="flex justify-end gap-3 border-t-2 border-ink px-7 py-5">
-          <button type="button" onClick={onClose} className="btn btn-outline">Cancel</button>
-          <button className="btn btn-primary" disabled={add.isPending || upload.isPending}>{add.isPending ? 'Adding…' : 'Add to list'}</button>
+          <button type="button" onClick={onClose} className="btn btn-outline">{t('cancel')}</button>
+          <button className="btn btn-primary" disabled={add.isPending || upload.isPending}>{t(add.isPending ? 'adding' : 'addToList')}</button>
         </div>
       </form>
     </div>

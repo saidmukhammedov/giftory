@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Light theme tokens. "paper" is the background, "ink" the foreground. */
 @theme {
   --color-paper: #F4F4F1;
   --color-ink: #000000;
@@ -7,11 +10,28 @@
   --color-peach: #FFB59A;
   --color-stone: #D8D8D0;
   --color-mute: #4A4A45;
-  --font-sans: "Archivo", system-ui, sans-serif;
+  --color-glass: rgb(255 255 255 / .44);
+  --color-field: rgb(255 255 255 / .6);
+  --color-edge: rgb(255 255 255 / .9);
+  --color-film: rgb(255 255 255 / .5);
+  --font-sans: "Archivo", "Roboto Flex", system-ui, sans-serif; /* Roboto Flex supplies Cyrillic */
 }
 
 @layer base {
-  body { @apply bg-paper text-ink antialiased; }
+  /* Dark theme: warm charcoal, light ink, same signal orange */
+  .dark {
+    --color-paper: #161614;
+    --color-ink: #F2F1EC;
+    --color-peach: #5E3A2B;
+    --color-stone: #2D2D29;
+    --color-mute: #A9A9A0;
+    --color-glass: rgb(30 30 27 / .62);
+    --color-field: rgb(255 255 255 / .06);
+    --color-edge: rgb(255 255 255 / .16);
+    --color-film: rgb(22 22 20 / .55);
+    color-scheme: dark;
+  }
+  body { @apply bg-paper text-ink antialiased; transition: background-color .2s, color .2s; }
   a { text-decoration-thickness: 2px; text-underline-offset: 4px; }
   :focus-visible { outline: 3px solid var(--color-signal); outline-offset: 3px; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
@@ -21,26 +41,27 @@
   /* Display type: wide and heavy, like a poster */
   .display { font-weight: 900; font-stretch: 118%; letter-spacing: -0.05em; line-height: .9; }
 
-  /* Frosted glass panel, meant to float over flat orange/black shapes */
+  /* Frosted glass panel, floating over flat orange shapes */
   .glass {
-    background: rgb(255 255 255 / .44);
+    background: var(--color-glass);
     backdrop-filter: blur(22px) saturate(140%);
-    box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / .9), 0 24px 48px -26px rgb(0 0 0 / .35);
+    box-shadow: inset 0 0 0 1.5px var(--color-edge), 0 24px 48px -26px rgb(0 0 0 / .35);
   }
-  .glass-dark { background: rgb(0 0 0 / .85); color: var(--color-paper); backdrop-filter: blur(18px); }
+  /* Inverted panel: dark on light theme, light on dark theme */
+  .glass-dark { background: color-mix(in srgb, var(--color-ink) 88%, transparent); color: var(--color-paper); backdrop-filter: blur(18px); }
 
   /* Gift tag shapes */
   .tag-v { clip-path: polygon(26px 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%, 0 26px); }
   .tag-h { clip-path: polygon(26px 0, 100% 0, 100% 100%, 26px 100%, 0 calc(100% - 26px), 0 26px); }
-  .hole { position: absolute; top: 15px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--color-paper); box-shadow: 0 0 0 2px #000; }
+  .hole { position: absolute; top: 15px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--color-paper); box-shadow: 0 0 0 2px var(--color-ink); }
 
-  /* Reserved gifts: frosted cellophane with a black ribbon */
+  /* Reserved gifts: frosted cellophane with a ribbon */
   .frost {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    background: rgb(255 255 255 / .5); backdrop-filter: blur(14px) saturate(120%);
+    background: var(--color-film); backdrop-filter: blur(14px) saturate(120%);
     animation: wrap-in .7s cubic-bezier(.7, 0, .2, 1) both;
   }
-  .frost::before, .frost::after { content: ""; position: absolute; background: #000; }
+  .frost::before, .frost::after { content: ""; position: absolute; background: var(--color-ink); }
   .frost::before { left: calc(50% - 8px); top: 0; bottom: 0; width: 16px; }
   .frost::after { top: calc(50% - 8px); left: 0; right: 0; height: 16px; }
   .frost > * { position: relative; z-index: 1; }
@@ -52,23 +73,24 @@
   }
   .btn:active { transform: translate(1px, 1px); }
   .btn:disabled { opacity: .5; cursor: not-allowed; }
+  /* Black text on orange in both themes: it's the readable pairing */
   .btn-primary { background: var(--color-signal); color: #000; }
-  .btn-primary:hover:not(:disabled) { background: #000; color: var(--color-paper); }
-  .btn-outline { background: rgb(255 255 255 / .5); backdrop-filter: blur(16px); box-shadow: inset 0 0 0 2px #000; color: #000; }
-  .btn-outline:hover:not(:disabled) { background: #000; color: var(--color-paper); }
+  .btn-primary:hover:not(:disabled) { background: var(--color-ink); color: var(--color-paper); }
+  .btn-outline { background: var(--color-field); backdrop-filter: blur(16px); box-shadow: inset 0 0 0 2px var(--color-ink); color: var(--color-ink); }
+  .btn-outline:hover:not(:disabled) { background: var(--color-ink); color: var(--color-paper); }
 
-  .chip { min-height: 44px; padding: 0 1.1rem; font-weight: 600; background: rgb(255 255 255 / .5); box-shadow: inset 0 0 0 2px #000; cursor: pointer; }
-  .chip:hover { background: #fff; }
-  .chip[aria-pressed="true"] { background: #000; color: var(--color-paper); }
+  .chip { min-height: 44px; padding: 0 1.1rem; font-weight: 600; background: var(--color-field); box-shadow: inset 0 0 0 2px var(--color-ink); cursor: pointer; }
+  .chip:hover { background: var(--color-paper); }
+  .chip[aria-pressed="true"] { background: var(--color-ink); color: var(--color-paper); }
 
   .input {
-    width: 100%; min-height: 54px; padding: 0 1rem; background: rgb(255 255 255 / .6);
-    box-shadow: inset 0 0 0 2px #000; outline: none;
+    width: 100%; min-height: 54px; padding: 0 1rem; background: var(--color-field);
+    box-shadow: inset 0 0 0 2px var(--color-ink); outline: none;
   }
-  .input:focus { box-shadow: inset 0 0 0 3px var(--color-signal); background: #fff; }
-  .input::placeholder { color: #6B6B64; }
+  .input:focus { box-shadow: inset 0 0 0 3px var(--color-signal); background: var(--color-paper); }
+  .input::placeholder { color: var(--color-mute); opacity: .8; }
 
-  .bar { height: 16px; padding: 3px; background: rgb(255 255 255 / .6); box-shadow: inset 0 0 0 2px #000; }
+  .bar { height: 16px; padding: 3px; background: var(--color-field); box-shadow: inset 0 0 0 2px var(--color-ink); }
   .bar > span { display: block; height: 100%; background: var(--color-signal); transition: width .5s ease; }
 }
 
