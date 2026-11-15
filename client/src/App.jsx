@@ -26,7 +26,8 @@ function Private({ children }) {
 
 export default function App() {
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  // Braces matter: newer Chrome returns a Promise from scrollTo, and React would call it as a cleanup
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return (
     <>
     <Suspense fallback={<Boot />}>

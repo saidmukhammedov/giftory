@@ -134,7 +134,7 @@ export function Header() {
   const panel = useRef(null);
   const closeMenu = () => { setMenu(false); menuButton.current?.focus(); };
   useDismiss(menu, closeMenu, ref);
-  useEffect(() => setMenu(false), [pathname]);
+  useEffect(() => { setMenu(false); }, [pathname]);
   // Move focus into the menu when it opens, so keyboard users land on the first item
   useEffect(() => { if (menu) panel.current?.querySelector('a, button')?.focus(); }, [menu]);
 
