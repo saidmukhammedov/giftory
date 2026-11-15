@@ -5,7 +5,6 @@ import { usePrefs } from '../i18n';
 import { Chevron, Close, Logo, Menu, Moon, Send, Sun } from './Icons';
 import { connectTelegram, useTelegramEnabled } from '../telegram';
 
-// Flat orange/ink shapes that sit behind the glass. Each: [kind, size, css position]
 export function Page({ shapes = [], children }) {
   return (
     <div className="relative isolate min-h-screen overflow-clip">
@@ -53,7 +52,6 @@ export function ThemeButton({ withLabel }) {
   );
 }
 
-// Used on pages without the full header (log in, sign up)
 export function PrefsControls() {
   return (
     <div className="flex items-center gap-1.5">
@@ -63,7 +61,6 @@ export function PrefsControls() {
   );
 }
 
-// Telegram photo when there is one, otherwise the first letter on orange
 const Avatar = ({ user, className = '' }) =>
   user.avatarUrl ? (
     <img src={user.avatarUrl} alt="" className={`size-11 shrink-0 rounded-full object-cover ${className}`} />
@@ -79,7 +76,6 @@ function ConnectTelegram({ className }) {
   return <button onClick={connectTelegram} className={className}><Send size={18} /> {t('connectTelegram')}</button>;
 }
 
-// Closes a popup on Escape or a click outside it
 function useDismiss(open, close, ref) {
   useEffect(() => {
     if (!open) return;
@@ -99,7 +95,6 @@ function AccountMenu({ user, onLogout }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const button = useRef(null);
-  // Escape or a click outside closes it; focus goes back to the avatar button
   useDismiss(open, () => { setOpen(false); button.current?.focus(); }, ref);
   const item = 'flex min-h-11 cursor-pointer items-center gap-2 px-3 text-left font-semibold no-underline hover:bg-ink hover:text-paper';
 
@@ -135,7 +130,6 @@ export function Header() {
   const closeMenu = () => { setMenu(false); menuButton.current?.focus(); };
   useDismiss(menu, closeMenu, ref);
   useEffect(() => { setMenu(false); }, [pathname]);
-  // Move focus into the menu when it opens, so keyboard users land on the first item
   useEffect(() => { if (menu) panel.current?.querySelector('a, button')?.focus(); }, [menu]);
 
   const logout = () => { signOut(); navigate('/'); };
@@ -152,7 +146,6 @@ export function Header() {
           <span className="display text-2xl">giftory</span>
         </Link>
 
-        {/* Desktop: everything in one row */}
         <nav className="hidden items-center gap-3 lg:flex">
           {links.slice(0, 2).map(([to, key]) => <NavLink key={to} to={to} className={desk}>{t(key)}</NavLink>)}
           {!user && <Link to="/login" className="px-3 py-2.5 font-semibold no-underline hover:text-signal-deep">{t('login')}</Link>}
@@ -161,7 +154,6 @@ export function Header() {
           {user ? <AccountMenu user={user} onLogout={logout} /> : <Link to="/signup" className="btn btn-primary min-h-11 px-5 text-[15px]">{t('create')}</Link>}
         </nav>
 
-        {/* Phone and tablet: one menu button */}
         <button
           ref={menuButton}
           onClick={() => setMenu(!menu)}
@@ -236,7 +228,6 @@ export function Footer() {
   );
 }
 
-// Essential-only storage notice. Analytics consent would be added here if analytics is ever enabled.
 export function CookieNotice() {
   const { t } = usePrefs();
   const [seen, setSeen] = useState(() => { try { return !!localStorage.getItem('giftory_cookie_notice'); } catch { return true; } });

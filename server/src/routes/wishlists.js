@@ -12,8 +12,6 @@ export const ITEM_COLUMNS = { name: 'name', link: 'link', price: 'price', image:
 
 const toList = (w) => ({ id: w.id, title: w.title, occasion: w.occasion, eventDate: w.event_date, note: w.note, slug: w.slug, createdAt: w.created_at });
 
-// The secret: reserved_by and contributor ids never leave the server.
-// Owners learn only that an item is taken; friends also learn whether it was them.
 export async function serializeItems(items, userId) {
   const groupIds = items.filter((i) => i.is_group_gift).map((i) => i.id);
   const stats = groupIds.length
@@ -92,7 +90,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
 router.delete('/:id', requireAuth, async (req, res) => {
   await ownedList(req.params.id, req.userId);
   const items = await query('DELETE FROM items WHERE wishlist_id = $1 RETURNING image', [req.params.id]);
-  await query('DELETE FROM wishlists WHERE id = $1', [req.params.id]); // contributions cascade with items
+  await query('DELETE FROM wishlists WHERE id = $1', [req.params.id]);
   await removeImages(items.map((i) => i.image));
   res.status(204).end();
 });

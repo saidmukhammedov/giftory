@@ -1,6 +1,5 @@
-// Legal texts in plain language. Update UPDATED and CONTACT_EMAIL before relying on them.
 export const UPDATED = '2026-11-14';
-export const CONTACT_EMAIL = 'akbaraliabduganievich@gmail.com';
+const CONTACT_EMAIL = 'akbaraliabduganievich@gmail.com';
 
 const c = CONTACT_EMAIL;
 

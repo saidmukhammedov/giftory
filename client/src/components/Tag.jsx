@@ -1,7 +1,6 @@
 import { Bow, Gift } from './Icons';
 import { tileColor } from '../utils';
 
-// A glass gift tag with a punched hole
 export function Tag({ className = '', children }) {
   return (
     <div className={`glass-card tag-v relative flex flex-col gap-3.5 px-5 pb-5 pt-12 ${className}`}>
@@ -11,8 +10,6 @@ export function Tag({ className = '', children }) {
   );
 }
 
-// Every photo gets the same 4:3 frame. The whole photo is shown (never cropped),
-// and a blurred, zoomed copy of it fills the empty space, so tall and wide photos both fit.
 export function Photo({ src, className = 'relative' }) {
   return (
     <div className={`isolate overflow-hidden bg-stone ${className}`}>
@@ -22,7 +19,6 @@ export function Photo({ src, className = 'relative' }) {
   );
 }
 
-// The item's picture. When wrapped, it frosts over and gets the ribbon.
 export function ItemTile({ item, index = 0, wrapped, hideImage, className = 'aspect-[4/3]' }) {
   const showPhoto = item.image && !hideImage;
   return (

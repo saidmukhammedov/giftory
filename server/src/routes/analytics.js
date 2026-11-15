@@ -1,5 +1,3 @@
-// Same-origin proxy to our self-hosted Umami, so visitors' browsers only ever talk to Giftory.
-// Umami is cookieless and anonymizes visitors (IP is used only to compute a salted, rotating hash).
 import { Router } from 'express';
 
 const router = Router();
@@ -30,7 +28,7 @@ router.post('/api/send', async (req, res) => {
     });
     res.status(r.status).type('application/json').send(await r.text());
   } catch {
-    res.status(202).end(); // analytics must never break the app
+    res.status(202).end();
   }
 });
 

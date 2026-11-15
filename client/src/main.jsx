@@ -6,13 +6,10 @@ import { AuthProvider } from './auth';
 import { PrefsProvider } from './i18n';
 import App from './App';
 import { ErrorBoundary, reloadOnce } from './components/Boot';
-// Fonts are bundled with the app, so no visitor data goes to a font CDN
 import '@fontsource-variable/archivo/wdth.css';
-import '@fontsource-variable/roboto-flex/wdth.css'; // width and weight axes only
+import '@fontsource-variable/roboto-flex/wdth.css';
 import './index.css';
 
-// Anonymous, cookieless visit counts (self-hosted Umami, served from our own domain).
-// Only in production builds that have a website ID. URL fragments (which can carry login tokens) are never sent.
 const umamiId = import.meta.env.VITE_UMAMI_WEBSITE_ID;
 if (umamiId && import.meta.env.PROD) {
   const s = Object.assign(document.createElement('script'), { src: '/u/script.js', defer: true });
@@ -20,7 +17,6 @@ if (umamiId && import.meta.env.PROD) {
   document.head.appendChild(s);
 }
 
-// A file from an older version is gone (new version went live): reload to get the new one
 window.addEventListener('vite:preloadError', (e) => { if (reloadOnce()) e.preventDefault(); });
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });

@@ -16,7 +16,6 @@ const notOwner = (item, userId) => {
   if (item.owner_id === userId) throw fail(403, "You can't pick gifts from your own list");
 };
 
-// Gifts the current user reserved or chipped in on, across all lists
 router.get('/reserved/mine', requireAuth, async (req, res) => {
   const rows = await query(
     `SELECT i.*, w.title AS wl_title, w.slug AS wl_slug, w.event_date AS wl_date
@@ -49,7 +48,6 @@ router.delete('/:id', requireAuth, async (req, res) => {
 
 router.post('/:id/reserve', requireAuth, async (req, res) => {
   notOwner(await findItem(req.params.id), req.userId);
-  // Atomic: only succeeds if nobody holds it, so two friends can't grab the same gift
   const item = await one(
     `UPDATE items SET reserved_by = $2, reserved_at = now(), updated_at = now()
      WHERE id = $1 AND reserved_by IS NULL AND NOT is_group_gift RETURNING *`,
@@ -72,7 +70,6 @@ router.post('/:id/contribute', requireAuth, async (req, res) => {
   const amount = Math.round(Number(req.body.amount));
   if (!(amount > 0)) throw fail(400, 'Enter an amount above zero');
   notOwner(await findItem(req.params.id), req.userId);
-  // One statement: raise the total only if it stays within the price, and record who gave what
   const item = await one(
     `WITH up AS (
        UPDATE items SET funded = funded + $2, updated_at = now()

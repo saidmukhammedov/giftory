@@ -1,5 +1,3 @@
-// "Log in with Telegram" via Telegram's OpenID Connect (authorization code + PKCE).
-// Docs: https://core.telegram.org/bots/telegram-login
 import crypto from 'node:crypto';
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
@@ -23,12 +21,10 @@ const cookieName = 'tg_oauth';
 const readCookie = (req) => req.headers.cookie?.split(/;\s*/).find((c) => c.startsWith(cookieName + '='))?.slice(cookieName.length + 1);
 const safeNext = (n) => (typeof n === 'string' && n.startsWith('/') && !n.startsWith('//') ? n : '/dashboard');
 
-// A logged-in user asks to connect Telegram: hand out a short-lived ticket for the redirect
 router.post('/link', requireAuth, (req, res) => {
   res.json({ ticket: jwt.sign({ link: req.userId }, process.env.JWT_SECRET, { expiresIn: '10m' }) });
 });
 
-// Step 1: send the browser to Telegram
 router.get('/start', (req, res) => {
   const e = env();
   if (!telegramEnabled()) return res.redirect('/login?error=telegram_off');
@@ -48,7 +44,6 @@ router.get('/start', (req, res) => {
   res.redirect(`${e.base}/auth?${params}`);
 });
 
-// Step 2: Telegram sends the browser back with a code; trade it for a signed id_token
 router.get('/callback', async (req, res) => {
   const e = env();
   res.setHeader('Set-Cookie', `${cookieName}=; Path=/api/auth/telegram; Max-Age=0`);
@@ -70,7 +65,6 @@ router.get('/callback', async (req, res) => {
 
     let user;
     if (saved.link) {
-      // Connect Telegram to the logged-in account, unless another account already uses it
       user = await one('UPDATE users SET telegram_id = $2, avatar_url = coalesce(avatar_url, $3) WHERE id = $1 AND NOT EXISTS (SELECT 1 FROM users WHERE telegram_id = $2 AND id <> $1) RETURNING id', [saved.link, telegramId, tg.picture || null]);
       if (!user) return res.redirect('/dashboard?error=telegram_taken');
     } else {
@@ -80,7 +74,6 @@ router.get('/callback', async (req, res) => {
         [name, telegramId, tg.picture || null]
       );
     }
-    // Token goes in the URL fragment, which browsers never send to servers or log
     res.redirect(`/auth/telegram#token=${signToken(user.id)}&next=${encodeURIComponent(saved.link ? '/dashboard' : saved.next)}`);
   } catch (err) {
     console.error('Telegram login failed:', err.message);

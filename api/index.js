@@ -1,5 +1,3 @@
-// Vercel entry: the same Express app, as one serverless function.
-// The schema is applied once per fresh instance, before the first request is handled.
 import app from '../server/src/app.js';
 import { migrate } from '../server/src/db.js';
 
@@ -7,7 +5,7 @@ let ready;
 
 export default async function handler(req, res) {
   ready ??= migrate().catch((e) => {
-    ready = undefined; // try again on the next request
+    ready = undefined;
     throw e;
   });
   try {

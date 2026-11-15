@@ -8,7 +8,6 @@ import { Close, Gift } from './Icons';
 
 const PRIORITIES = ['low', 'medium', 'high'];
 
-// Shrink the photo on the device before uploading: max 1200px, WebP (JPEG where WebP isn't supported)
 async function compress(file) {
   const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
   const scale = Math.min(1, 1200 / Math.max(bmp.width, bmp.height));
@@ -30,14 +29,11 @@ export default function AddItemModal({ list, onClose }) {
 
   const dialog = useRef(null);
 
-  // Escape and a click outside ask before throwing away what was typed. The Close and Cancel buttons don't ask.
   const blank = { name: '', price: '', link: '', image: '', note: '', priority: 'medium', isGroupGift: false };
   const dirty = Object.keys(blank).some((k) => form[k] !== blank[k]);
   const dismiss = useRef(onClose);
   dismiss.current = () => (!dirty || confirm(t('discardWish'))) && onClose();
 
-  // Keyboard: focus the first field on open, keep Tab inside the panel, Escape closes,
-  // and focus goes back to the button that opened it.
   useEffect(() => {
     const opener = document.activeElement;
     dialog.current?.querySelector('input:not([type=file]):not([hidden]), textarea')?.focus();
@@ -160,7 +156,6 @@ export default function AddItemModal({ list, onClose }) {
 
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-2 font-bold">{t('howMuch')}</legend>
-            {/* Real radio buttons: arrow keys move between options */}
             <div className="flex gap-1 bg-field p-1 edge">
               {PRIORITIES.map((v) => (
                 <label key={v} className="flex-1 cursor-pointer">

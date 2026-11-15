@@ -19,7 +19,6 @@ router.get('/:id', async (req, res) => {
   res.set({ 'Content-Type': img.mime, 'Cache-Control': 'public, max-age=31536000, immutable' }).send(img.data);
 });
 
-// Removes uploaded photos that no item uses any more (called after deletes)
 export const removeImages = (urls) => {
   const ids = urls.filter((u) => u?.startsWith(PREFIX)).map((u) => u.slice(PREFIX.length));
   return ids.length ? query('DELETE FROM images WHERE id = ANY($1::uuid[]) AND NOT EXISTS (SELECT 1 FROM items WHERE image = $2 || images.id::text)', [ids, PREFIX]) : null;

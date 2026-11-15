@@ -4,19 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Giftory: shared wishlists</title>
-    <!-- Apply saved theme and language before first paint, so there is no flash -->
     <script>
       try {
         if (localStorage.getItem('giftory_theme') === 'dark') document.documentElement.classList.add('dark');
         document.documentElement.lang = localStorage.getItem('giftory_lang') || 'en';
       } catch (e) {}
     </script>
-    <!-- Theme colours before any stylesheet arrives, so the first frame is never an empty black or white screen -->
     <style>html{background:#F4F4F1;color:#000;font-family:system-ui,sans-serif}html.dark{background:#161614;color:#F2F1EC}</style>
   </head>
   <body>
     <div id="root">
-      <!-- Placeholder until the app starts; replaced on first render -->
       <div class="boot"><span class="display">giftory</span><p class="boot-late">Taking a while? <a href="/">Reload the page</a></p></div>
     </div>
     <script type="module" src="/src/main.jsx"></script>

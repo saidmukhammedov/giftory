@@ -2,26 +2,24 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Light theme tokens. "paper" is the background, "ink" the foreground. */
 @theme {
   --color-paper: #F4F4F1;
   --color-ink: #000000;
   --color-signal: #FF4D00;
-  --color-signal-deep: #C23800; /* orange for small text: 5:1 on paper and glass */
+  --color-signal-deep: #C23800;
   --color-telegram: #2AABEE;
   --color-peach: #FFB59A;
   --color-stone: #D8D8D0;
   --color-mute: #4A4A45;
   --color-glass: rgb(255 255 255 / .44);
-  --color-card: rgb(255 255 255 / .72); /* denser glass for text-heavy cards, readable over orange */
+  --color-card: rgb(255 255 255 / .72);
   --color-field: rgb(255 255 255 / .6);
   --color-edge: rgb(255 255 255 / .9);
   --color-film: rgb(255 255 255 / .5);
-  --font-sans: "Archivo Variable", "Roboto Flex Variable", system-ui, sans-serif; /* Roboto Flex supplies Cyrillic */
+  --font-sans: "Archivo Variable", "Roboto Flex Variable", system-ui, sans-serif;
 }
 
 @layer base {
-  /* Dark theme: warm charcoal, light ink, same signal orange */
   .dark {
     --color-paper: #161614;
     --color-ink: #F2F1EC;
@@ -44,33 +42,26 @@
 }
 
 @layer components {
-  /* Display type: wide and heavy, like a poster */
   .display { font-weight: 900; font-stretch: 118%; letter-spacing: -0.05em; line-height: .9; }
 
-  /* Frosted glass panel, floating over flat orange shapes */
   .glass {
     background: var(--color-glass);
     backdrop-filter: blur(22px) saturate(140%);
     box-shadow: inset 0 0 0 1.5px var(--color-edge), 0 24px 48px -26px rgb(0 0 0 / .35);
   }
-  /* Item and step cards: denser and a lighter blur, so text stays readable and long grids stay smooth */
   .glass-card {
     background: var(--color-card);
     backdrop-filter: blur(12px);
     box-shadow: inset 0 0 0 1.5px var(--color-edge), 0 24px 48px -26px rgb(0 0 0 / .35);
   }
-  /* A 2px ink outline, and the shadow for panels that pop over the page */
   .edge { box-shadow: inset 0 0 0 2px var(--color-ink); }
   .pop { background: var(--color-paper); box-shadow: inset 0 0 0 2px var(--color-ink), 0 24px 48px -20px rgb(0 0 0 / .45); }
-  /* Inverted panel: dark on light theme, light on dark theme */
   .glass-dark { background: color-mix(in srgb, var(--color-ink) 88%, transparent); color: var(--color-paper); backdrop-filter: blur(18px); }
 
-  /* Gift tag shapes */
   .tag-v { clip-path: polygon(26px 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%, 0 26px); }
   .tag-h { clip-path: polygon(26px 0, 100% 0, 100% 100%, 26px 100%, 0 calc(100% - 26px), 0 26px); }
   .hole { position: absolute; top: 15px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--color-paper); box-shadow: 0 0 0 2px var(--color-ink); }
 
-  /* Reserved gifts: frosted cellophane with a ribbon */
   .frost {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
     background: var(--color-film); backdrop-filter: blur(14px) saturate(120%);
@@ -88,7 +79,6 @@
   }
   .btn:active { transform: translate(1px, 1px); }
   .btn:disabled { opacity: .5; cursor: not-allowed; }
-  /* Black text on orange in both themes: it's the readable pairing */
   .btn-primary { background: var(--color-signal); color: #000; }
   .btn-primary:hover:not(:disabled) { background: var(--color-ink); color: var(--color-paper); }
   .btn-outline { background: var(--color-field); backdrop-filter: blur(16px); box-shadow: inset 0 0 0 2px var(--color-ink); color: var(--color-ink); }
@@ -109,7 +99,6 @@
   .bar > span { display: block; height: 100%; background: var(--color-signal); transition: width .5s ease; }
 }
 
-/* Shown before the app starts and while a page downloads. After 8s a hint to reload appears. */
 .boot { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.25rem; padding: 2rem; text-align: center; }
 .boot .display { font-size: 2.5rem; }
 .boot-text { font-size: 1.125rem; }
@@ -120,13 +109,11 @@
 @keyframes wrap-in { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
 @keyframes fade-in { from { opacity: 0; } }
 
-/* Birthday: one entrance, then still */
 .confetti { animation: confetti-in .7s cubic-bezier(.2, 1.4, .4, 1) both; }
 .bow-pop { animation: bow-pop .6s cubic-bezier(.2, 1.6, .4, 1) .2s both; }
 @keyframes confetti-in { from { opacity: 0; transform: translateY(-24px) scale(.4); } }
 @keyframes bow-pop { from { opacity: 0; transform: scale(.3) rotate(-25deg); } }
 
-/* Reduced motion: no sliding, popping or growing. Changes still show, as a short fade. */
 @media (prefers-reduced-motion: reduce) {
   .frost, .confetti, .bow-pop { animation: fade-in .25s ease-out both; }
   .btn:active { transform: none; }

@@ -5,8 +5,6 @@ import Landing from './pages/Landing';
 import { CookieNotice } from './components/Layout';
 import { Boot, reloadOnce } from './components/Boot';
 
-// Each page downloads only when it's first opened. If a download fails
-// (a new version went live while the page was open), reload once to get the new files.
 const page = (load) => lazy(() => load().catch((e) => { reloadOnce(); throw e; }));
 const Auth = page(() => import('./pages/Auth'));
 const Dashboard = page(() => import('./pages/Dashboard'));
@@ -26,7 +24,6 @@ function Private({ children }) {
 
 export default function App() {
   const { pathname } = useLocation();
-  // Braces matter: newer Chrome returns a Promise from scrollTo, and React would call it as a cleanup
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return (
     <>

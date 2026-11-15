@@ -1,6 +1,5 @@
 import { Component } from 'react';
 
-// Reload at most once a minute, so a broken download can't cause a reload loop
 export function reloadOnce() {
   try {
     const last = Number(sessionStorage.getItem('giftory_reload') || 0);
@@ -11,15 +10,12 @@ export function reloadOnce() {
   return true;
 }
 
-// Shown while a page downloads. Same look as the placeholder in index.html.
 export const Boot = () => (
   <div className="boot" role="status">
     <span className="display">giftory</span>
   </div>
 );
 
-// If anything crashes while drawing the page, show a way out instead of an empty screen.
-// Plain English and Russian, since the language code itself may be what broke.
 export class ErrorBoundary extends Component {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }

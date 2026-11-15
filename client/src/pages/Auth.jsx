@@ -70,7 +70,6 @@ export default function Auth({ mode }) {
               {t('email')}
               <input className="input font-normal" type="email" required autoComplete="email" value={form.email} onChange={set('email')} placeholder="you@example.com" />
             </label>
-            {/* The show/hide button sits outside the label, so the field's name stays just "Password" */}
             <div className="flex flex-col gap-2">
               <label htmlFor={pwId} className="font-bold">{t('password')}</label>
               <div className="relative">

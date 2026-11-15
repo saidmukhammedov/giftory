@@ -9,7 +9,6 @@ import { Page, Header } from '../components/Layout';
 import { Plus } from '../components/Icons';
 import { BirthdayBanner, isBirthdayToday } from '../components/Birthday';
 
-// Stored in English, shown in the current language
 const OCCASIONS = ['Birthday', 'Wedding', 'New home', 'New baby', 'Graduation', 'Just because'];
 
 function NewListForm({ onCancel }) {
@@ -59,7 +58,6 @@ export default function Dashboard() {
   const t = useT();
   const [creating, setCreating] = useState(false);
   const newButton = useRef(null);
-  // Cancelling the form brings keyboard focus back to the button that opened it
   const cancel = () => { setCreating(false); requestAnimationFrame(() => newButton.current?.focus()); };
   const tgError = TELEGRAM_ERRORS[useSearchParams()[0].get('error')];
   const { data: lists, isLoading, isError, error } = useQuery({ queryKey: ['my-lists'], queryFn: () => api.get('/wishlists/mine').then((r) => r.data) });

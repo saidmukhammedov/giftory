@@ -5,7 +5,6 @@ import { useAuth } from '../auth';
 import { useT } from '../i18n';
 import { Page } from '../components/Layout';
 
-// Telegram sends people back here with the session in the URL fragment (#token=…&next=…)
 export default function TelegramCallback() {
   const { signIn } = useAuth();
   const t = useT();
@@ -18,7 +17,7 @@ export default function TelegramCallback() {
     const hash = new URLSearchParams(window.location.hash.slice(1));
     const token = hash.get('token');
     const next = hash.get('next')?.startsWith('/') ? hash.get('next') : '/dashboard';
-    history.replaceState(null, '', window.location.pathname); // drop the token from the address bar
+    history.replaceState(null, '', window.location.pathname);
     if (!token) return navigate('/login?error=telegram', { replace: true });
     api.get('/auth/me', { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => { signIn({ token, user: r.data.user }); navigate(next, { replace: true }); })

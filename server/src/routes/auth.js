@@ -33,7 +33,6 @@ router.post('/login', async (req, res) => {
   res.json({ token: signToken(user.id), user: publicUser });
 });
 
-// Which sign-in options the app should show
 router.get('/providers', (_req, res) => res.json({ telegram: telegramEnabled() }));
 
 const ME = `SELECT id, name, email, avatar_url AS "avatarUrl", telegram_id IS NOT NULL AS telegram, password_hash IS NOT NULL AS "hasPassword" FROM users WHERE id = $1`;
@@ -45,7 +44,6 @@ const me = async (id) => {
 
 router.get('/me', requireAuth, async (req, res) => res.json({ user: await me(req.userId) }));
 
-// Profile: name and email
 router.patch('/me', requireAuth, async (req, res) => {
   const user = await me(req.userId);
   const name = req.body.name?.trim();
@@ -61,7 +59,6 @@ router.patch('/me', requireAuth, async (req, res) => {
   res.json({ user: await me(req.userId) });
 });
 
-// Set a password (Telegram-only accounts) or change it
 router.put('/password', requireAuth, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   const row = await one('SELECT email, password_hash FROM users WHERE id = $1', [req.userId]);
@@ -72,7 +69,6 @@ router.put('/password', requireAuth, async (req, res) => {
   res.json({ user: await me(req.userId) });
 });
 
-// Disconnect Telegram, only if email + password still let the person in
 router.delete('/telegram', requireAuth, async (req, res) => {
   const user = await me(req.userId);
   if (!user.email || !user.hasPassword) return res.status(400).json({ message: 'Set an email and password first, or you would lose access to your account' });
@@ -80,7 +76,6 @@ router.delete('/telegram', requireAuth, async (req, res) => {
   res.json({ user: await me(req.userId) });
 });
 
-// Delete the account: lists, wishes, photos and contributions go with it; gifts they reserved are released
 router.delete('/me', requireAuth, async (req, res) => {
   await one('DELETE FROM users WHERE id = $1 RETURNING id', [req.userId]);
   res.status(204).end();

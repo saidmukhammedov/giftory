@@ -1,4 +1,3 @@
--- Runs on every start; safe to re-run.
 CREATE TABLE IF NOT EXISTS users (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name          text NOT NULL,
@@ -29,7 +28,6 @@ CREATE TABLE IF NOT EXISTS items (
   note          text,
   priority      text NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
   is_group_gift boolean NOT NULL DEFAULT false,
-  -- The secret. Never selected into an API response: see serializeItems().
   reserved_by   uuid REFERENCES users ON DELETE SET NULL,
   reserved_at   timestamptz,
   funded        bigint NOT NULL DEFAULT 0 CHECK (funded <= price),
@@ -48,7 +46,6 @@ CREATE TABLE IF NOT EXISTS contributions (
 );
 CREATE INDEX IF NOT EXISTS contributions_item_idx ON contributions (item_id);
 
--- Wish photos, compressed in the browser (WebP, max 1200px) before upload
 CREATE TABLE IF NOT EXISTS images (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   owner_id   uuid NOT NULL REFERENCES users ON DELETE CASCADE,
@@ -57,11 +54,9 @@ CREATE TABLE IF NOT EXISTS images (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- Telegram login: accounts can have email+password, Telegram, or both
 ALTER TABLE users ALTER COLUMN email DROP NOT NULL;
 ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_id text UNIQUE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url text;
 
--- When the user agreed to the Terms and Privacy Policy (sign-up checkbox, or continuing with Telegram)
 ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at timestamptz;

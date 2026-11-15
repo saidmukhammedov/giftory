@@ -1,4 +1,3 @@
-// Full API test against an in-memory Postgres (PGlite). Run: npm test
 import { spawn } from 'node:child_process';
 import { PGlite } from '@electric-sql/pglite';
 import { PGLiteSocketServer } from '@electric-sql/pglite-socket';
@@ -6,7 +5,6 @@ import http from 'node:http';
 import crypto from 'node:crypto';
 import { generateKeyPair, exportJWK, SignJWT } from 'jose';
 
-// A fake Telegram OAuth server that signs real RS256 id_tokens
 const TG = 'http://127.0.0.1:5066', CLIENT_ID = '123456', SECRET = 's3cret';
 const { publicKey, privateKey } = await generateKeyPair('RS256');
 const jwk = { ...(await exportJWK(publicKey)), kid: 'k1', alg: 'RS256', use: 'sig' };
@@ -102,7 +100,6 @@ ok(res.some((i) => i.id === esp.id) && res.every((i) => i.wishlist.slug === list
 
 ok((await call('PATCH', `/items/${cam.id}`, { price: 1300000 }, owner)).data.price === 1300000, 'owner edits a wish');
 ok((await call('PATCH', `/wishlists/${list.id}`, { note: 'Thanks!' }, owner)).status === 200, 'owner edits list');
-// Photos
 const png = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da63f8ffff3f0005fe02fea7d6a4510000000049454e44ae426082', 'hex');
 const up = await fetch(B + '/images', { method: 'POST', headers: { 'content-type': 'image/png', authorization: 'Bearer ' + owner }, body: png });
 const { url } = await up.json();
@@ -118,7 +115,6 @@ ok((await fetch('http://127.0.0.1:5055' + url)).status === 404, 'photo removed w
 ok((await call('GET', '/wishlists/nope')).status === 404 && (await call('POST', '/items/not-a-uuid/reserve', null, a)).status === 404, 'bad ids give 404');
 ok((await call('DELETE', `/wishlists/${list.id}`, null, owner)).status === 204, 'list deleted');
 ok((await call('GET', '/items/reserved/mine', null, b)).data.length === 0, 'delete cascades to items and contributions');
-// Telegram login
 const S = 'http://127.0.0.1:5055';
 async function telegramLogin({ next = '/w/abc', ticket, tamperState = false } = {}) {
   const start = await fetch(`${S}/api/auth/telegram/start?next=${encodeURIComponent(next)}${ticket ? '&ticket=' + ticket : ''}`, { redirect: 'manual' });
@@ -157,7 +153,6 @@ ok((await telegramLogin({ ticket: t2 })).loc === '/dashboard?error=telegram_take
 ok((await call('POST', '/auth/telegram/link')).status === 401, 'connecting requires being logged in');
 tgServer.close();
 
-// Profile
 ok((await call('PATCH', '/auth/me', { name: 'Madina Y.', email: 'madina.new@t.uz' }, owner)).data.user.email === 'madina.new@t.uz', 'profile: name and email updated');
 ok((await call('PATCH', '/auth/me', { name: 'x', email: 'jasur@t.uz' }, owner)).status === 409, "profile: can't take another account's email");
 ok((await call('PATCH', '/auth/me', { name: 'x', email: '' }, owner)).status === 400, "profile: email can't be removed while it's the login");
@@ -170,7 +165,6 @@ ok((await call('DELETE', '/auth/telegram', null, s1.token)).status === 400, "can
 ok((await call('PUT', '/auth/password', { newPassword: 'abcdefgh1' }, s1.token)).data.user.hasPassword, 'Telegram account sets a password');
 ok((await call('DELETE', '/auth/telegram', null, s1.token)).data.user.telegram === false, 'then disconnects Telegram');
 
-// Delete account
 const gone = await reg('temp');
 const gl = (await call('POST', '/wishlists', { title: 'Temp list' }, gone)).data;
 const gi = (await call('POST', `/wishlists/${gl.id}/items`, { name: 'Thing', price: 10 }, gone)).data;

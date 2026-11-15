@@ -64,8 +64,6 @@ function Price({ item }) {
   return <p className="display whitespace-nowrap text-lg tracking-tight">{som(item.price)} {t('som')}</p>;
 }
 
-/* ---------- What friends see ---------- */
-
 function FriendView({ wishlist, items }) {
   const { user } = useAuth();
   const t = useT();
@@ -77,7 +75,6 @@ function FriendView({ wishlist, items }) {
 
   const act = useMutation({
     mutationFn: ({ method, url, body }) => api[method](url, body),
-    // The button pressed can disappear (Reserve becomes "Reserved by you"), so move focus to what replaced it
     onSuccess: async (_, { focus = [] }) => {
       await qc.invalidateQueries({ queryKey: ['wishlist', wishlist.slug] });
       requestAnimationFrame(() => focus.map((id) => document.getElementById(id)).find(Boolean)?.focus());
@@ -202,8 +199,6 @@ function FriendView({ wishlist, items }) {
   );
 }
 
-/* ---------- What the owner sees ---------- */
-
 function OwnerView({ wishlist, items }) {
   const t = useT();
   const qc = useQueryClient();
@@ -217,7 +212,6 @@ function OwnerView({ wishlist, items }) {
   const removeList = useMutation({ mutationFn: () => api.delete(`/wishlists/${wishlist.id}`), onSuccess: () => navigate('/dashboard') });
 
   const [copied, setCopied] = useState('');
-  // Clipboard access can be blocked (old browsers, in-app browsers). Then select the link so it can be copied by hand.
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(url);

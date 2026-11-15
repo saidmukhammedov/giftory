@@ -18,7 +18,6 @@ function Card({ title, children, tone = '' }) {
   );
 }
 
-// Status line under a form: error in a dark box, success as a quiet note
 function Status({ m, ok }) {
   const t = useT();
   if (m.isError) return <p role="alert" className="bg-ink p-3 font-semibold text-paper">{t.error(m.error)}</p>;
@@ -75,7 +74,6 @@ export default function Profile() {
             <p className="text-mute">{t('passwordNeedsEmail')}</p>
           ) : (
             <form className="flex flex-col gap-5" onSubmit={(e) => { e.preventDefault(); savePw.mutate(); }}>
-              {/* Hidden username helps password managers save the right login */}
               <input type="email" autoComplete="username" value={user.email} readOnly hidden />
               {user.hasPassword && (
                 <label className="flex flex-col gap-2 font-bold">

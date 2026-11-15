@@ -2,7 +2,6 @@ import { usePrefs } from '../i18n';
 import { Page, Header, Footer } from '../components/Layout';
 import { LEGAL, UPDATED } from '../legal';
 
-// One page component for /privacy, /terms and /cookies
 export default function Legal({ doc }) {
   const { t, lang } = usePrefs();
   const sections = (LEGAL[lang] || LEGAL.en)[doc];
