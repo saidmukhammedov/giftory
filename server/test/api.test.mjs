@@ -37,7 +37,7 @@ await new Promise((r) => tgServer.listen(5066, '127.0.0.1', r));
 
 const pgServer = new PGLiteSocketServer({ db: await PGlite.create(), port: 5433, host: '127.0.0.1', maxConnections: 20 });
 await pgServer.start();
-const api = spawn('node', ['src/index.js'], {
+const api = spawn('node', [process.env.VERCEL ? 'test/vercel-host.mjs' : 'src/index.js'], {
   env: { ...process.env, DATABASE_URL: 'postgresql://postgres@127.0.0.1:5433/postgres', JWT_SECRET: 'test', PORT: '5055', TELEGRAM_OAUTH_URL: TG, TELEGRAM_CLIENT_ID: CLIENT_ID, TELEGRAM_CLIENT_SECRET: SECRET, PUBLIC_URL: 'http://127.0.0.1:5055' },
   stdio: ['ignore', 'pipe', 'inherit'],
 });

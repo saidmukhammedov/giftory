@@ -10,6 +10,11 @@ import telegramRoutes from './routes/telegram.js';
 import analyticsRoutes from './routes/analytics.js';
 
 const app = express();
+
+// An old address can forward visitors to the new one (REDIRECT_TO=https://giftory-app.vercel.app)
+if (process.env.REDIRECT_TO) {
+  app.use((req, res, next) => (req.method === 'GET' && !req.path.startsWith('/api') ? res.redirect(301, process.env.REDIRECT_TO + req.originalUrl) : next()));
+}
 app.use(cors({ origin: process.env.CLIENT_URL || true }));
 app.use(express.json({ limit: '100kb' }));
 
