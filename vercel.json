@@ -7,6 +7,19 @@
   "regions": [
     "fra1"
   ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "giftory-app.vercel.app"
+        }
+      ],
+      "destination": "https://giftory.uz/$1",
+      "permanent": true
+    }
+  ],
   "functions": {
     "api/index.js": {
       "includeFiles": "server/src/schema.sql",

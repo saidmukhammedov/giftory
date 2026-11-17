@@ -81,10 +81,10 @@ Wishes take a photo from the device gallery (or an image link). The browser shri
 
 ## Deploy
 
-Live at **https://giftory-app.vercel.app**.
+Live at **https://giftory.uz**.
 
 - **Vercel (current):** `vercel.json` builds the client to the CDN and runs the same Express app as one function (`api/index.js`, region `fra1`, next to Neon). Nothing sleeps, so there is no cold-start wait. Env: `DATABASE_URL` (Neon pooled), `JWT_SECRET`, `PUBLIC_URL`, `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET`, `UMAMI_URL`, `VITE_UMAMI_WEBSITE_ID`, and `NODEJS_HELPERS=0` (Express parses bodies itself). `VERCEL=1 npm test` runs the API tests against the function entry.
-- **Old address:** the Render service only forwards visitors to Vercel (`REDIRECT_TO=https://giftory-app.vercel.app`).
+- **Old address:** the Render service only forwards visitors to Vercel (`REDIRECT_TO=https://giftory.uz`).
 
 ## Next up
 
