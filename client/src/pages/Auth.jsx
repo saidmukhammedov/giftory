@@ -6,7 +6,7 @@ import { useAuth } from '../auth';
 import { useT } from '../i18n';
 import { Page, PrefsControls } from '../components/Layout';
 import { Bow, Logo, Send } from '../components/Icons';
-import { useTelegramEnabled, telegramLoginUrl, TELEGRAM_ERRORS } from '../telegram';
+import { useProviders, telegramLoginUrl, TELEGRAM_ERRORS } from '../telegram';
 
 export default function Auth({ mode }) {
   const signup = mode === 'signup';
@@ -16,7 +16,8 @@ export default function Auth({ mode }) {
   const [params] = useSearchParams();
   const next = params.get('next') || '/dashboard';
   const tgError = TELEGRAM_ERRORS[params.get('error')];
-  const telegram = useTelegramEnabled();
+  const providers = useProviders();
+  const telegram = providers?.telegram;
   const [form, setForm] = useState({ name: '', email: '', password: '', acceptTerms: false });
   const [showPw, setShowPw] = useState(false);
   const pwId = useId();
@@ -49,7 +50,7 @@ export default function Auth({ mode }) {
             {tgError && <p role="alert" className="bg-ink p-3 font-semibold text-paper">{t(tgError)}</p>}
             {telegram && (
               <>
-                <a href={telegramLoginUrl(next)} className="btn min-h-14 bg-telegram text-black no-underline hover:bg-ink hover:text-paper" aria-describedby="tg-consent">
+                <a href={telegramLoginUrl(next)} className="btn min-h-14 btn-telegram no-underline" aria-describedby="tg-consent">
                   <Send size={20} /> {t('continueTelegram')}
                 </a>
                 <p id="tg-consent" className="-mt-2 text-sm text-mute">
@@ -79,6 +80,7 @@ export default function Auth({ mode }) {
                 </button>
               </div>
               {signup && <span id={`${pwId}-hint`} className="text-sm text-mute">{t('pwHint')}</span>}
+              {!signup && providers?.reset && <Link to="/forgot" className="self-end text-sm font-semibold">{t('forgot')}</Link>}
             </div>
             {signup && (
               <label className="flex cursor-pointer items-start gap-3 text-[15px] leading-snug">

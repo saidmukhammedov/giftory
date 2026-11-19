@@ -105,7 +105,45 @@ export default function Dashboard() {
             </Link>
           ))}
         </div>
+
+        <Upcoming />
       </main>
     </Page>
+  );
+}
+
+function Upcoming() {
+  const t = useT();
+  const { data: people } = useQuery({ queryKey: ['follows'], queryFn: () => api.get('/follows').then((r) => r.data) });
+  if (!people?.length) return null;
+  const when = (p) => {
+    if (p.daysUntil == null) return t('noBirthday');
+    if (p.daysUntil === 0) return t('birthdayToday');
+    const [m, d] = p.birthday.split('-').map(Number);
+    return t('birthdayIn', { n: p.daysUntil, date: t.date(new Date(2000, m - 1, d), { day: 'numeric', month: 'long' }) });
+  };
+  return (
+    <section aria-labelledby="upcoming" className="flex flex-col gap-5 pt-8">
+      <div>
+        <h2 id="upcoming" className="display text-[clamp(30px,3.6vw,48px)]">{t('upcomingTitle')}</h2>
+        <p className="mt-1 text-mute">{t('upcomingSub')}</p>
+      </div>
+      <ul className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr))]">
+        {people.map((p) => (
+          <li key={p.id} className="glass-card flex items-center gap-4 p-5">
+            {p.avatarUrl ? (
+              <img src={p.avatarUrl} alt="" className="size-12 shrink-0 rounded-full object-cover" />
+            ) : (
+              <span className="display grid size-12 shrink-0 place-items-center rounded-full bg-signal text-xl text-on-signal">{p.name[0]?.toUpperCase()}</span>
+            )}
+            <div className="min-w-0 flex-1 break-words">
+              <p className="font-bold">{p.name}</p>
+              <p className={`text-sm ${p.daysUntil != null && p.daysUntil <= 7 ? 'font-bold text-signal-deep' : 'text-mute'}`}>{when(p)}</p>
+              {p.list && <Link to={`/w/${p.list.slug}`} className="text-sm font-semibold">{p.list.title}</Link>}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

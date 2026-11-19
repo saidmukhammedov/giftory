@@ -60,3 +60,33 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_id text UNIQUE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url text;
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at timestamptz;
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS birthday date;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS lang text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS bot_ok boolean NOT NULL DEFAULT false;
+ALTER TABLE wishlists ADD COLUMN IF NOT EXISTS thanks text;
+ALTER TABLE items ADD COLUMN IF NOT EXISTS received boolean NOT NULL DEFAULT false;
+ALTER TABLE items ADD COLUMN IF NOT EXISTS signed boolean NOT NULL DEFAULT false;
+ALTER TABLE items ADD COLUMN IF NOT EXISTS collector_id uuid REFERENCES users ON DELETE SET NULL;
+ALTER TABLE contributions ADD COLUMN IF NOT EXISTS paid boolean NOT NULL DEFAULT false;
+ALTER TABLE contributions ADD COLUMN IF NOT EXISTS signed boolean NOT NULL DEFAULT false;
+
+CREATE TABLE IF NOT EXISTS follows (
+  follower_id uuid NOT NULL REFERENCES users ON DELETE CASCADE,
+  followee_id uuid NOT NULL REFERENCES users ON DELETE CASCADE,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (follower_id, followee_id),
+  CHECK (follower_id <> followee_id)
+);
+CREATE INDEX IF NOT EXISTS follows_followee_idx ON follows (followee_id);
+
+CREATE TABLE IF NOT EXISTS password_resets (
+  token_hash text PRIMARY KEY,
+  user_id    uuid NOT NULL REFERENCES users ON DELETE CASCADE,
+  expires_at timestamptz NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+  key     text PRIMARY KEY,
+  sent_at timestamptz NOT NULL DEFAULT now()
+);

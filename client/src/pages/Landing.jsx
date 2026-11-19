@@ -81,7 +81,7 @@ export default function Landing() {
             <div className="flex items-center gap-4">
               <ItemTile item={{}} index={0} className="size-20 shrink-0" />
               <div>
-                <span className="bg-signal px-2.5 py-1 text-[13px] font-bold text-black">{t('groupGift')}</span>
+                <span className="bg-signal px-2.5 py-1 text-[13px] font-bold text-on-signal">{t('groupGift')}</span>
                 <p className="mt-2 text-2xl font-bold">{t('espresso')}</p>
               </div>
             </div>

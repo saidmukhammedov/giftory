@@ -10,8 +10,15 @@ const { publicKey, privateKey } = await generateKeyPair('RS256');
 const jwk = { ...(await exportJWK(publicKey)), kid: 'k1', alg: 'RS256', use: 'sig' };
 const codes = new Map();
 let nextTgUser = { sub: '9001', name: 'Madina Telegram', preferred_username: 'madina', picture: 'https://t.me/i/userpic/madina.jpg' };
+const BOT_TOKEN = '42:bot-token', botCalls = [];
 const tgServer = http.createServer(async (req, res) => {
   const url = new URL(req.url, TG);
+  if (url.pathname.startsWith(`/bot${BOT_TOKEN}/`)) {
+    let body = ''; for await (const c of req) body += c;
+    const method = url.pathname.split('/').pop();
+    botCalls.push({ method, body: JSON.parse(body || '{}') });
+    return res.end(JSON.stringify({ ok: true, result: method === 'getWebhookInfo' ? { url: '' } : true }));
+  }
   if (url.pathname === '/.well-known/jwks.json') return res.end(JSON.stringify({ keys: [jwk] }));
   if (url.pathname === '/auth') {
     const code = crypto.randomUUID();
@@ -33,10 +40,13 @@ const tgServer = http.createServer(async (req, res) => {
 });
 await new Promise((r) => tgServer.listen(5066, '127.0.0.1', r));
 
+import fs from 'node:fs';
+const OUTBOX = `/tmp/giftory-outbox-${process.pid}.jsonl`;
 const pgServer = new PGLiteSocketServer({ db: await PGlite.create(), port: 5433, host: '127.0.0.1', maxConnections: 20 });
 await pgServer.start();
 const api = spawn('node', [process.env.VERCEL ? 'test/vercel-host.mjs' : 'src/index.js'], {
-  env: { ...process.env, DATABASE_URL: 'postgresql://postgres@127.0.0.1:5433/postgres', JWT_SECRET: 'test', PORT: '5055', TELEGRAM_OAUTH_URL: TG, TELEGRAM_CLIENT_ID: CLIENT_ID, TELEGRAM_CLIENT_SECRET: SECRET, PUBLIC_URL: 'http://127.0.0.1:5055' },
+  env: { ...process.env, DATABASE_URL: 'postgresql://postgres@127.0.0.1:5433/postgres', JWT_SECRET: 'test', PORT: '5055', TELEGRAM_OAUTH_URL: TG, TELEGRAM_CLIENT_ID: CLIENT_ID, TELEGRAM_CLIENT_SECRET: SECRET, PUBLIC_URL: 'http://127.0.0.1:5055',
+    TELEGRAM_API_URL: TG, TELEGRAM_BOT_TOKEN: BOT_TOKEN, TELEGRAM_BOT_USERNAME: 'giftory_test_bot', MAIL_OUTBOX: OUTBOX, CRON_SECRET: 'cron' },
   stdio: ['ignore', 'pipe', 'inherit'],
 });
 await new Promise((r) => api.stdout.once('data', r));
@@ -151,7 +161,6 @@ nextTgUser = { sub: '9001', name: 'Madina Telegram' };
 const { ticket: t2 } = (await call('POST', '/auth/telegram/link', null, emailUser)).data;
 ok((await telegramLogin({ ticket: t2 })).loc === '/dashboard?error=telegram_taken', "can't connect a Telegram account that another account already uses");
 ok((await call('POST', '/auth/telegram/link')).status === 401, 'connecting requires being logged in');
-tgServer.close();
 
 ok((await call('PATCH', '/auth/me', { name: 'Madina Y.', email: 'madina.new@t.uz' }, owner)).data.user.email === 'madina.new@t.uz', 'profile: name and email updated');
 ok((await call('PATCH', '/auth/me', { name: 'x', email: 'jasur@t.uz' }, owner)).status === 409, "profile: can't take another account's email");
@@ -172,6 +181,103 @@ await call('POST', `/items/${gi.id}/reserve`, null, a);
 ok((await call('DELETE', '/auth/me', null, gone)).status === 204, 'account deleted');
 ok((await call('GET', '/auth/me', null, gone)).status === 404 && (await call('GET', `/wishlists/${gl.slug}`)).status === 404, 'its lists are gone too');
 ok((await call('POST', '/auth/login', { email: 'temp@t.uz', password: 'password1' })).status === 401, "deleted account can't log in");
+
+const guest = (await call('POST', '/auth/guest', { name: 'Aziza', acceptTerms: true })).data;
+ok(guest.token && guest.user.guest && !guest.user.email, 'friend can join with just a name');
+ok((await call('POST', '/auth/guest', { name: 'Aziza' })).status === 400, 'guest still has to accept the terms');
+
+const providers = (await call('GET', '/auth/providers')).data;
+ok(providers.reset && providers.bot === 'giftory_test_bot', 'password reset and the bot are offered when configured');
+ok((await call('POST', '/auth/forgot', { email: 'nobody@t.uz' })).status === 200 && !fs.existsSync(OUTBOX), 'unknown email: same answer, no email sent');
+ok((await call('POST', '/auth/forgot', { email: 'Jasur@t.uz', lang: 'ru' })).status === 200, 'reset requested');
+const mail = JSON.parse(fs.readFileSync(OUTBOX, 'utf8').trim().split('\n').pop());
+const resetToken = mail.body.match(/#token=([\w-]+)/)?.[1];
+ok(mail.to === 'Jasur@t.uz' && /парол/i.test(mail.subject) && resetToken, 'reset email sent in the chosen language');
+ok((await call('POST', '/auth/reset', { token: resetToken, password: 'short' })).status === 400, 'reset needs a long enough password');
+ok((await call('POST', '/auth/reset', { token: resetToken, password: 'brandnew1' })).data.token, 'reset link sets a new password and logs in');
+ok((await call('POST', '/auth/login', { email: 'jasur@t.uz', password: 'brandnew1' })).status === 200, 'new password works');
+ok((await call('POST', '/auth/reset', { token: resetToken, password: 'another11' })).status === 400, 'a reset link works only once');
+
+const initData = (user, extra = {}) => {
+  const p = new URLSearchParams({ auth_date: String(Math.floor(Date.now() / 1000)), user: JSON.stringify(user), ...extra });
+  const check = [...p.entries()].sort(([x], [y]) => x.localeCompare(y)).map(([k, v]) => `${k}=${v}`).join('\n');
+  const key = crypto.createHmac('sha256', 'WebAppData').update(BOT_TOKEN).digest();
+  p.set('hash', crypto.createHmac('sha256', key).update(check).digest('hex'));
+  return p.toString();
+};
+const app1 = (await call('POST', '/auth/webapp', { initData: initData({ id: 777, first_name: 'Kamola', language_code: 'uz', allows_write_to_pm: true }, { start_param: 'abc123' }) })).data;
+ok(app1.token && app1.user.telegram && app1.user.botOk && app1.startParam === 'abc123', 'Mini App logs in from Telegram data');
+ok((await call('POST', '/auth/webapp', { initData: initData({ id: 777 }).replace(/hash=\w+/, 'hash=' + 'a'.repeat(64)) })).status === 401, 'forged Mini App data rejected');
+
+const tashkent = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tashkent' }));
+const inDays = (n) => { const d = new Date(tashkent); d.setDate(d.getDate() + n); return d.toLocaleDateString('en-CA'); };
+const jasurMe = (await call('PATCH', '/auth/me', { birthday: inDays(3).replace(/^\d{4}/, '2000') }, a)).data.user;
+ok(jasurMe.birthday === inDays(3).replace(/^\d{4}/, '2000'), 'birthday saved on the profile');
+const jList = (await call('POST', '/wishlists', { title: 'Jasur turns 26', occasion: 'Birthday', eventDate: inDays(3) }, a)).data;
+const jItem = (await call('POST', `/wishlists/${jList.id}/items`, { name: 'Headphones', price: 900000 }, a)).data;
+const jView = (await call('GET', `/wishlists/${jList.slug}`, null, app1.token)).data;
+ok(jView.wishlist.owner.id === jasurMe.id && jView.wishlist.owner.following === false, 'list shows its owner to follow');
+ok((await call('POST', `/follows/${jasurMe.id}`, null, app1.token)).data.following, 'Kamola follows Jasur');
+ok((await call('POST', `/follows/${jasurMe.id}`, null, a)).status === 400, "can't follow yourself");
+const upcoming = (await call('GET', '/follows', null, app1.token)).data;
+ok(upcoming[0].daysUntil === 3 && upcoming[0].list.slug === jList.slug, 'upcoming birthdays: 3 days, with their list');
+
+botCalls.length = 0;
+await call('POST', `/items/${jItem.id}/reserve`, null, app1.token);
+ok(!botCalls.some((c) => c.method === 'sendMessage'), "owner without the bot isn't messaged");
+const kamolaList = (await call('POST', '/wishlists', { title: 'Kamola housewarming' }, app1.token)).data;
+const kItem = (await call('POST', `/wishlists/${kamolaList.id}/items`, { name: 'Plant', price: 50000 }, app1.token)).data;
+await call('POST', `/items/${kItem.id}/reserve`, null, b);
+const sent = botCalls.find((c) => c.method === 'sendMessage');
+ok(sent?.body.chat_id === '777' && /Kamola housewarming/.test(sent.body.text) && !/dilnoza/i.test(sent.body.text), 'owner on Telegram hears a gift was picked, not by whom');
+
+botCalls.length = 0;
+ok((await call('GET', '/bot/cron')).status === 401, 'cron needs its secret');
+const cron = (await fetch(B + '/bot/cron', { headers: { authorization: 'Bearer cron' } }).then((r) => r.json()));
+const remind = botCalls.filter((c) => c.method === 'sendMessage');
+ok(cron.reminders >= 1 && remind.some((c) => c.body.chat_id === '777' && /Headphones/.test(c.body.text)), 'reminder 3 days before: what you picked');
+ok(remind.some((c) => c.body.chat_id === '777' && /🎂/.test(c.body.text)), "reminder 3 days before a followed friend's birthday");
+botCalls.length = 0;
+await fetch(B + '/bot/cron', { headers: { authorization: 'Bearer cron' } });
+ok(!botCalls.some((c) => c.method === 'sendMessage'), 'reminders are sent only once');
+
+const wh = (body, secret) => fetch(B + '/bot/webhook', { method: 'POST', headers: { 'content-type': 'application/json', 'x-telegram-bot-api-secret-token': secret }, body: JSON.stringify(body) });
+const hookSecret = crypto.createHash('sha256').update('webhook:test').digest('hex').slice(0, 48);
+ok((await wh({}, 'wrong')).status === 401, 'webhook rejects calls without its secret');
+botCalls.length = 0;
+await wh({ message: { text: '/start', chat: { id: 9002, type: 'private' }, from: { id: 9002, language_code: 'ru' } } }, hookSecret);
+ok(botCalls.some((c) => c.method === 'sendMessage' && c.body.chat_id === 9002 && /Giftory/.test(c.body.text)), '/start answers with an Open Giftory button');
+
+const past = (await call('POST', '/wishlists', { title: 'Done party', eventDate: '2025-01-01' }, owner)).data;
+const pi = (await call('POST', `/wishlists/${past.id}/items`, { name: 'Book', price: 100 }, owner)).data;
+const pg = (await call('POST', `/wishlists/${past.id}/items`, { name: 'Bike', price: 1000, isGroupGift: true }, owner)).data;
+await call('POST', `/items/${pi.id}/reserve`, null, a);
+ok((await call('POST', `/items/${pi.id}/sign`, { signed: true }, b)).status === 403, "can't sign a gift you didn't give");
+ok((await call('POST', `/items/${pi.id}/sign`, { signed: true }, a)).data.signed, 'giver lets the owner know it was them');
+await call('POST', `/items/${pg.id}/contribute`, { amount: 300 }, a);
+await call('POST', `/items/${pg.id}/contribute`, { amount: 200 }, b);
+ok((await call('POST', `/items/${pg.id}/collector`, null, guest.token)).status === 403, 'only people who chipped in can collect');
+const col = (await call('POST', `/items/${pg.id}/collector`, null, a)).data;
+ok(col.collector.isMe && col.chippers.length === 2, 'collector sees who chipped in and how much');
+ok((await call('POST', `/items/${pg.id}/collector`, null, b)).status === 409, 'only one collector per gift');
+await call('POST', `/items/${pg.id}/paid`, { paid: true }, b);
+const bView = (await call('GET', `/wishlists/${past.slug}`, null, b)).data.items.find((i) => i.id === pg.id);
+const aView = (await call('GET', `/wishlists/${past.slug}`, null, a)).data.items.find((i) => i.id === pg.id);
+ok(bView.myPaid && bView.collector.name && !bView.chippers, 'chipper marks paid, sees the collector, not the list');
+ok(aView.chippers.find((c) => c.amount === 200).paid, 'collector sees who has paid');
+await call('PATCH', `/items/${pi.id}`, { received: true }, owner);
+const ownerPast = (await call('GET', `/wishlists/${past.slug}`, null, owner));
+const book = ownerPast.data.items.find((i) => i.id === pi.id), bike = ownerPast.data.items.find((i) => i.id === pg.id);
+ok(book.received && book.from.length === 1 && bike.from.length === 0, 'owner sees received, and only signed givers');
+ok(!/chippers|collector|myPaid/.test(ownerPast.raw), 'owner never sees collecting details');
+ok((await call('PATCH', `/wishlists/${past.id}`, { thanks: 'Thank you all!' }, owner)).data.thanks === 'Thank you all!', 'owner writes a thank-you note');
+ok((await call('GET', '/items/reserved/mine', null, a)).data.find((i) => i.id === pi.id).wishlist.thanks === 'Thank you all!', 'givers see the thank-you note');
+
+ok((await call('POST', '/preview', { url: 'http://127.0.0.1:5055/api/health' }, a)).status === 422, 'link preview refuses private addresses');
+ok((await call('POST', '/preview', { url: 'file:///etc/passwd' }, a)).status === 422, 'link preview refuses non-web links');
+ok((await call('POST', '/preview', { url: 'https://example.com' })).status === 401, 'link preview needs an account');
+tgServer.close();
+fs.rmSync(OUTBOX, { force: true });
 
 console.log(`\n${pass} passed, ${failN} failed`);
 api.kill();

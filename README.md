@@ -83,7 +83,7 @@ Wishes take a photo from the device gallery (or an image link). The browser shri
 
 Live at **https://giftory.uz**.
 
-- **Vercel (current):** `vercel.json` builds the client to the CDN and runs the same Express app as one function (`api/index.js`, region `fra1`, next to Neon). Nothing sleeps, so there is no cold-start wait. Env: `DATABASE_URL` (Neon pooled), `JWT_SECRET`, `PUBLIC_URL`, `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET`, `UMAMI_URL`, `VITE_UMAMI_WEBSITE_ID`, and `NODEJS_HELPERS=0` (Express parses bodies itself). `VERCEL=1 npm test` runs the API tests against the function entry.
+- **Vercel (current):** `vercel.json` builds the client to the CDN and runs the same Express app as one function (`api/index.js`, region `fra1`, next to Neon). Nothing sleeps, so there is no cold-start wait. Env: `DATABASE_URL` (Neon pooled), `JWT_SECRET`, `PUBLIC_URL`, `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET`, `UMAMI_URL`, `VITE_UMAMI_WEBSITE_ID`, `NODEJS_HELPERS=0` (Express parses bodies itself), plus optional `TELEGRAM_BOT_TOKEN` and `TELEGRAM_BOT_USERNAME` (reminders, notifications and the Mini App; the webhook registers itself), `CRON_SECRET` (daily reminder job), and `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` (password reset emails). `VERCEL=1 npm test` runs the API tests against the function entry.
 - **Old address:** the Render service only forwards visitors to Vercel (`REDIRECT_TO=https://giftory.uz`).
 
 ## Next up

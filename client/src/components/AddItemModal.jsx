@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api';
 import { useT } from '../i18n';
 import { som } from '../utils';
 import { Photo } from './Tag';
-import { Close, Gift } from './Icons';
+import { Close, Gift, Wand } from './Icons';
+import { useDialog } from './Dialog';
 
 const PRIORITIES = ['low', 'medium', 'high'];
 
@@ -27,27 +28,10 @@ export default function AddItemModal({ list, onClose }) {
   const [dragging, setDragging] = useState(false);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
-  const dialog = useRef(null);
-
   const blank = { name: '', price: '', link: '', image: '', note: '', priority: 'medium', isGroupGift: false };
   const dirty = Object.keys(blank).some((k) => form[k] !== blank[k]);
-  const dismiss = useRef(onClose);
-  dismiss.current = () => (!dirty || confirm(t('discardWish'))) && onClose();
-
-  useEffect(() => {
-    const opener = document.activeElement;
-    dialog.current?.querySelector('input:not([type=file]):not([hidden]), textarea')?.focus();
-    const onKey = (e) => {
-      if (e.key === 'Escape') return dismiss.current();
-      if (e.key !== 'Tab') return;
-      const items = [...dialog.current.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]):not([hidden]), textarea, label[tabindex]')].filter((el) => el.offsetParent !== null || el.matches('.sr-only'));
-      const first = items[0], last = items[items.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
-    document.addEventListener('keydown', onKey);
-    return () => { document.removeEventListener('keydown', onKey); opener?.focus?.(); };
-  }, []);
+  const dismiss = () => (!dirty || confirm(t('discardWish'))) && onClose();
+  const dialog = useDialog(dismiss);
 
   const upload = useMutation({
     mutationFn: async (file) => {
@@ -56,6 +40,11 @@ export default function AddItemModal({ list, onClose }) {
       return (await api.post('/images', blob, { headers: { 'Content-Type': blob.type } })).data.url;
     },
     onSuccess: (url) => setForm((f) => ({ ...f, image: url })),
+  });
+
+  const fill = useMutation({
+    mutationFn: () => api.post('/preview', { url: form.link }).then((r) => r.data),
+    onSuccess: (d) => setForm((f) => ({ ...f, name: f.name || d.name || '', price: f.price || (d.price ? String(d.price) : ''), image: f.image || d.image || '' })),
   });
 
   const add = useMutation({
@@ -70,7 +59,7 @@ export default function AddItemModal({ list, onClose }) {
   const drop = (e) => { e.preventDefault(); setDragging(false); upload.mutate(e.dataTransfer.files?.[0]); };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-ink/30" onClick={() => dismiss.current()}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-ink/30" onClick={dismiss}>
       <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="add-title" onClick={(e) => e.stopPropagation()} className="h-full w-full max-w-[540px]">
       <form
         onSubmit={(e) => { e.preventDefault(); add.mutate(); }}
@@ -87,6 +76,19 @@ export default function AddItemModal({ list, onClose }) {
         </div>
 
         <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-7 py-6">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="item-link" className="font-bold">{t('productLink')} <span className="font-normal text-mute">{t('optional')}</span></label>
+            <span id="item-link-hint" className="-mt-1 text-sm text-mute">{t('productLinkHint')}</span>
+            <div className="flex gap-2">
+              <input id="item-link" aria-describedby="item-link-hint" className="input min-w-0 flex-1" type="url" value={form.link} onChange={set('link')} placeholder="https://uzum.uz/…" />
+              <button type="button" className="btn btn-outline px-4" disabled={!/^https?:\/\/[^/]+\.[^/]+/.test(form.link) || fill.isPending} onClick={() => fill.mutate()}>
+                <Wand size={18} /> {t(fill.isPending ? 'filling' : 'fillIn')}
+              </button>
+            </div>
+            {fill.isError && <p role="alert" className="bg-ink p-3 text-sm font-semibold text-paper">{t.error(fill.error)}</p>}
+            {fill.isSuccess && <p role="status" className="text-sm font-semibold">{t('filled')}</p>}
+          </div>
+
           <fieldset className="flex flex-col gap-2.5">
             <legend className="mb-2 font-bold">{t('photo')} <span className="font-normal text-mute">{t('optional')}</span></legend>
 
@@ -109,7 +111,7 @@ export default function AddItemModal({ list, onClose }) {
                 className={`relative flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-3 p-6 text-center edge focus-within:outline-3 focus-within:outline-signal ${dragging ? 'bg-signal/20' : 'bg-field hover:bg-paper'}`}
               >
                 <input type="file" accept="image/*" className="sr-only" onChange={pick} disabled={upload.isPending} />
-                <span className="grid size-16 place-items-center rounded-full bg-signal text-black"><Gift size={30} /></span>
+                <span className="grid size-16 place-items-center rounded-full bg-signal text-on-signal"><Gift size={30} /></span>
                 <span className="text-lg font-bold">{t(upload.isPending ? 'uploading' : 'chooseGallery')}</span>
                 <span className="text-sm text-mute">{t('photoHint')}</span>
               </label>
@@ -144,11 +146,6 @@ export default function AddItemModal({ list, onClose }) {
               />
             </label>
           </div>
-          <label className="flex flex-col gap-2 font-bold">
-            <span>{t('productLink')} <span className="font-normal text-mute">{t('optional')}</span></span>
-            <span className="-mt-1 text-sm font-normal text-mute">{t('productLinkHint')}</span>
-            <input className="input font-normal" type="url" value={form.link} onChange={set('link')} placeholder="https://" />
-          </label>
           <label className="flex flex-col gap-2 font-bold">
             <span>{t('itemNote')} <span className="font-normal text-mute">{t('optional')}</span></span>
             <textarea className="input min-h-24 py-3 font-normal" value={form.note} onChange={set('note')} placeholder={t('itemNotePh')} />

@@ -31,9 +31,15 @@ export default function Reserved() {
             <Tag key={item.id}>
               <ItemTile item={item} index={i} />
               <div>
+                {item.received && <span className="mb-2 inline-block bg-ink px-2.5 py-1 text-[13px] font-bold text-paper">{t('received')}</span>}
                 <h2 className="text-lg font-bold leading-tight">{item.name}</h2>
                 <p className="display text-lg tracking-tight">{item.myContribution ? t('youGave', { x: som(item.myContribution) }) : som(item.price)} {t('som')}</p>
               </div>
+              {item.wishlist.thanks && (
+                <p className="border-l-4 border-signal pl-3 text-[15px]">
+                  <span className="block text-sm font-bold">{t('thanksFrom', { name: item.wishlist.owner })}</span>“{item.wishlist.thanks}”
+                </p>
+              )}
               <Link to={`/w/${item.wishlist.slug}`} className="mt-auto border-t-2 border-ink/15 pt-3 font-semibold">
                 {item.wishlist.title}
                 {item.wishlist.eventDate && <span className="block text-sm font-normal text-mute">{t.date(item.wishlist.eventDate)}</span>}

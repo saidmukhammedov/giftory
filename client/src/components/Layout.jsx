@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
-import { usePrefs } from '../i18n';
+import { LANGS, usePrefs } from '../i18n';
 import { Chevron, Close, Logo, Menu, Moon, Send, Sun } from './Icons';
 import { connectTelegram, useTelegramEnabled } from '../telegram';
 
@@ -27,7 +27,7 @@ export function LangSwitch() {
   const { t, lang, setLang } = usePrefs();
   return (
     <div role="group" aria-label={t('language')} className={`flex ${box}`}>
-      {['en', 'ru'].map((l) => (
+      {LANGS.map((l) => (
         <button key={l} lang={l} aria-pressed={lang === l} onClick={() => setLang(l)} className={`min-h-11 min-w-11 cursor-pointer px-2 text-sm font-bold uppercase ${lang === l ? 'bg-ink text-paper' : 'hover:text-signal-deep'}`}>
           {l}
         </button>
@@ -65,7 +65,7 @@ const Avatar = ({ user, className = '' }) =>
   user.avatarUrl ? (
     <img src={user.avatarUrl} alt="" className={`size-11 shrink-0 rounded-full object-cover ${className}`} />
   ) : (
-    <span className={`grid size-11 shrink-0 place-items-center rounded-full bg-signal font-black text-black ${className}`}>{user.name?.[0]?.toUpperCase()}</span>
+    <span className={`grid size-11 shrink-0 place-items-center rounded-full bg-signal font-black text-on-signal ${className}`}>{user.name?.[0]?.toUpperCase()}</span>
   );
 
 function ConnectTelegram({ className }) {
@@ -139,7 +139,7 @@ export function Header() {
 
   return (
     <div ref={ref} className="sticky top-0 z-40 mx-auto max-w-[1376px] px-3 pt-3 sm:px-8 sm:pt-5">
-      <a href="#main" className="sr-only z-50 bg-signal px-4 py-3 font-bold text-black focus:not-sr-only focus:absolute focus:left-4 focus:top-4">{t('skipToContent')}</a>
+      <a href="#main" className="sr-only z-50 bg-signal px-4 py-3 font-bold text-on-signal focus:not-sr-only focus:absolute focus:left-4 focus:top-4">{t('skipToContent')}</a>
       <header className="glass flex items-center justify-between gap-3 py-2 pl-4 pr-2 sm:pl-5">
         <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2.5 no-underline" aria-label={t('home')}>
           <Logo />
@@ -199,7 +199,7 @@ export function Header() {
             </div>
           </div>
 
-          {user && <ConnectTelegram className="btn w-full bg-telegram text-black hover:bg-ink hover:text-paper" />}
+          {user && <ConnectTelegram className="btn w-full btn-telegram" />}
           {user && <button onClick={logout} className="btn btn-outline w-full">{t('logOut')}</button>}
         </div>
       )}

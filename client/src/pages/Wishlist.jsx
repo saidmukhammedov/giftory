@@ -8,11 +8,16 @@ import { Page, Header, Footer } from '../components/Layout';
 import { Tag, ItemTile } from '../components/Tag';
 import AddItemModal from '../components/AddItemModal';
 import { BirthdayBanner, isBirthdayToday } from '../components/Birthday';
-import { Check, External, Lock, Plus, Send, Trash, Back } from '../components/Icons';
+import JoinDialog from '../components/JoinDialog';
+import QrDialog from '../components/QrDialog';
+import { Bell, Check, External, Lock, Plus, Qr, Send, Trash, Back } from '../components/Icons';
 import { som } from '../utils';
 
+const today = () => new Date().toLocaleDateString('en-CA');
+const isPast = (w) => !!w.eventDate && w.eventDate < today();
+
 const SHAPES = [['circle', 460, { right: -120, top: -130 }], ['square', 320, { left: -80, top: 700, rotate: '14deg' }]];
-const PRIORITY = { high: ['prioHigh', 'bg-signal text-black'], medium: ['prioMedium', 'bg-ink text-paper'] };
+const PRIORITY = { high: ['prioHigh', 'bg-signal text-on-signal'], medium: ['prioMedium', 'bg-ink text-paper'] };
 const AMOUNTS = [100000, 250000, 500000];
 
 export default function Wishlist() {
@@ -41,20 +46,38 @@ export default function Wishlist() {
 
 function ListHeader({ wishlist, aside }) {
   const t = useT();
+  const { owner } = wishlist;
   return (
     <section className="mx-auto flex max-w-[1376px] flex-wrap items-end justify-between gap-10 px-4 pb-10 pt-14 sm:px-8">
       <div className="flex min-w-0 flex-[1_1_560px] flex-col gap-5">
         <div className="flex items-center gap-3.5">
-          <span className="display grid size-14 place-items-center rounded-full bg-signal text-2xl text-black">{wishlist.owner.name?.[0]?.toUpperCase()}</span>
-          <div>
-            <p className="font-semibold">{wishlist.owner.name}</p>
+          {owner.avatarUrl ? (
+            <img src={owner.avatarUrl} alt="" className="size-14 shrink-0 rounded-full object-cover" />
+          ) : (
+            <span className="display grid size-14 shrink-0 place-items-center rounded-full bg-signal text-2xl text-on-signal">{owner.name?.[0]?.toUpperCase()}</span>
+          )}
+          <div className="min-w-0 break-words">
+            <p className="font-semibold">{owner.name}</p>
             <p className="text-mute">{[wishlist.occasion && t.occasion(wishlist.occasion), t.date(wishlist.eventDate)].filter(Boolean).join(', ')}</p>
           </div>
         </div>
-        <h1 className="display text-[clamp(42px,5.6vw,88px)]">{wishlist.title}</h1>
+        <h1 className="display break-words text-[clamp(42px,5.6vw,88px)]">{wishlist.title}</h1>
         {wishlist.note && <p className="max-w-[34em] text-lg text-mute">“{wishlist.note}”</p>}
       </div>
       {aside}
+    </section>
+  );
+}
+
+function Thanks({ wishlist }) {
+  const t = useT();
+  if (!wishlist.thanks) return null;
+  return (
+    <section className="mx-auto max-w-[1376px] px-4 pb-8 sm:px-8">
+      <div className="glass-card flex flex-col gap-2 border-l-8 border-signal p-6">
+        <p className="font-bold">{t('thanksFrom', { name: wishlist.owner.name })}</p>
+        <p className="max-w-[40em] text-lg">“{wishlist.thanks}”</p>
+      </div>
     </section>
   );
 }
@@ -67,11 +90,13 @@ function Price({ item }) {
 function FriendView({ wishlist, items }) {
   const { user } = useAuth();
   const t = useT();
-  const navigate = useNavigate();
   const qc = useQueryClient();
   const [filter, setFilter] = useState('all');
   const [amounts, setAmounts] = useState({});
   const [flash, setFlash] = useState('');
+  const [pending, setPending] = useState(null);
+  const past = isPast(wishlist);
+  const ownerFirst = wishlist.owner.name?.split(' ')[0];
 
   const act = useMutation({
     mutationFn: ({ method, url, body }) => api[method](url, body),
@@ -85,7 +110,7 @@ function FriendView({ wishlist, items }) {
     },
   });
   const run = (req) => {
-    if (!user) return navigate(`/login?next=/w/${wishlist.slug}`);
+    if (!user) return setPending(req);
     setFlash('');
     act.mutate(req);
   };
@@ -95,18 +120,28 @@ function FriendView({ wishlist, items }) {
   const isMine = (i) => i.reservedByMe || i.myContribution > 0;
   const shown = items.filter((i) => filter === 'all' || (filter === 'free' ? isOpen(i) : isMine(i)));
   const taken = items.filter((i) => !i.isGroupGift && i.isReserved).length;
+  const following = wishlist.owner.following;
+  const follow = { method: following ? 'delete' : 'post', url: `/follows/${wishlist.owner.id}`, focus: ['follow'] };
 
   return (
     <>
       <ListHeader
         wishlist={wishlist}
         aside={
-          <div className="glass-dark flex flex-[0_1_380px] items-start gap-3.5 p-6">
-            <Lock size={26} className="mt-0.5 shrink-0 text-signal" />
-            <p>{t('secret', { name: wishlist.owner.name })}</p>
+          <div className="flex flex-[0_1_380px] flex-col gap-3">
+            <div className="glass-dark flex items-start gap-3.5 p-6">
+              <Lock size={26} className="mt-0.5 shrink-0 text-signal" />
+              <p>{t('secret', { name: wishlist.owner.name })}</p>
+            </div>
+            {user?.id !== wishlist.owner.id && (
+              <button id="follow" className={`btn ${following ? 'btn-outline' : 'btn-primary'}`} aria-pressed={following} disabled={act.isPending} onClick={() => run(follow)}>
+                <Bell size={18} /> {t(following ? 'following' : 'followBirthday', { name: ownerFirst })}
+              </button>
+            )}
           </div>
         }
       />
+      <Thanks wishlist={wishlist} />
 
       <section className="mx-auto flex max-w-[1376px] flex-wrap items-center justify-between gap-4 px-4 pb-7 sm:px-8">
         <div role="group" aria-label={t('filterAria')} className="flex flex-wrap gap-2.5">
@@ -131,6 +166,7 @@ function FriendView({ wishlist, items }) {
             const index = items.indexOf(item);
             const takenByOther = item.isReserved && !item.reservedByMe;
             const amount = Math.min(amounts[item.id] || 250000, left(item));
+            const named = `name-${item.id}`;
             return (
               <Tag key={item.id} className={`[contain-intrinsic-size:auto_540px] [content-visibility:auto] ${takenByOther ? 'opacity-80' : ''}`}>
                 <ItemTile item={item} index={index} wrapped={!item.isGroupGift && item.isReserved} />
@@ -138,8 +174,9 @@ function FriendView({ wishlist, items }) {
                   <div className="flex flex-wrap gap-2">
                     {item.isGroupGift && <span className="bg-stone px-2.5 py-1 text-[13px] font-bold">{t('groupGift')}</span>}
                     {!item.isReserved && PRIORITY[item.priority] && <span className={`px-2.5 py-1 text-[13px] font-bold ${PRIORITY[item.priority][1]}`}>{t(PRIORITY[item.priority][0])}</span>}
+                    {item.received && isMine(item) && <span className="bg-ink px-2.5 py-1 text-[13px] font-bold text-paper">{t('received')}</span>}
                   </div>
-                  <h2 className="text-xl font-bold leading-tight">{item.name}</h2>
+                  <h2 id={named} className="text-xl font-bold leading-tight">{item.name}</h2>
                   <Price item={item} />
                 </div>
                 {item.note && !takenByOther && <p className="text-[15px] leading-normal text-mute">{item.note}</p>}
@@ -151,14 +188,16 @@ function FriendView({ wishlist, items }) {
 
                 <div className="mt-auto flex flex-col gap-3 pt-1">
                   {!item.isGroupGift && !item.isReserved && (
-                    <button id={`reserve-${item.id}`} className="btn btn-primary" disabled={act.isPending} onClick={() => run({ method: 'post', url: `/items/${item.id}/reserve`, focus: [`mine-${item.id}`] })}>
+                    <button id={`reserve-${item.id}`} aria-describedby={named} className="btn btn-primary" disabled={act.isPending} onClick={() => run({ method: 'post', url: `/items/${item.id}/reserve`, focus: [`mine-${item.id}`] })}>
                       {t('reserve')}
                     </button>
                   )}
                   {item.reservedByMe && (
                     <>
                       <span id={`mine-${item.id}`} tabIndex={-1} className="btn btn-outline cursor-default shadow-[inset_0_0_0_2px_var(--color-signal)] hover:!bg-field hover:!text-ink"><Check size={18} /> {t('reservedByYou')}</span>
-                      <button className="min-h-11 cursor-pointer font-semibold underline" onClick={() => run({ method: 'delete', url: `/items/${item.id}/reserve`, focus: [`reserve-${item.id}`] })}>{t('cancelReservation')}</button>
+                      {!past && !item.received && (
+                        <button aria-describedby={named} className="min-h-11 cursor-pointer font-semibold underline" onClick={() => run({ method: 'delete', url: `/items/${item.id}/reserve`, focus: [`reserve-${item.id}`] })}>{t('cancelReservation')}</button>
+                      )}
                     </>
                   )}
                   {takenByOther && <p className="border-t-2 border-ink/15 pt-3 text-center font-semibold text-mute">{t('takenByOther')}</p>}
@@ -179,7 +218,7 @@ function FriendView({ wishlist, items }) {
                               <button key={a} className="chip flex-1 px-1.5 text-sm" aria-pressed={amount === a} onClick={() => setAmounts({ ...amounts, [item.id]: a })}>{som(a)}</button>
                             ))}
                           </div>
-                          <button id={`chip-${item.id}`} className="btn btn-primary" disabled={act.isPending} onClick={() => run({ method: 'post', url: `/items/${item.id}/contribute`, body: { amount }, focus: [`chip-${item.id}`, `funded-${item.id}`] })}>
+                          <button id={`chip-${item.id}`} aria-describedby={named} className="btn btn-primary" disabled={act.isPending} onClick={() => run({ method: 'post', url: `/items/${item.id}/contribute`, body: { amount }, focus: [`chip-${item.id}`, `funded-${item.id}`] })}>
                             {t('chipIn', { x: som(amount) })}
                           </button>
                         </>
@@ -187,7 +226,14 @@ function FriendView({ wishlist, items }) {
                         <p id={`funded-${item.id}`} tabIndex={-1} className="text-center font-bold text-signal-deep">{t('fullyFunded')}</p>
                       )}
                       {item.myContribution > 0 && <p className="text-center text-sm text-mute">{t('youChipped', { x: som(item.myContribution) })}</p>}
+                      {item.myContribution > 0 && <Collecting item={item} named={named} run={run} busy={act.isPending} />}
                     </>
+                  )}
+
+                  {isMine(item) && (past || item.received) && (
+                    <button aria-describedby={named} aria-pressed={item.signed} className="min-h-11 cursor-pointer text-sm font-semibold underline" onClick={() => run({ method: 'post', url: `/items/${item.id}/sign`, body: { signed: !item.signed } })}>
+                      {t(item.signed ? 'signedUndo' : 'signIt', { name: ownerFirst })}
+                    </button>
                   )}
                 </div>
               </Tag>
@@ -195,7 +241,51 @@ function FriendView({ wishlist, items }) {
           })}
         </div>
       </section>
+      {pending && (
+        <JoinDialog
+          next={`/w/${wishlist.slug}`}
+          onClose={() => setPending(null)}
+          onJoined={() => { const req = pending; setPending(null); act.mutate(req); }}
+        />
+      )}
     </>
+  );
+}
+
+function Collecting({ item, named, run, busy }) {
+  const t = useT();
+  const { collector } = item;
+  if (!collector) {
+    return (
+      <button aria-describedby={named} className="btn btn-outline text-sm" disabled={busy} onClick={() => run({ method: 'post', url: `/items/${item.id}/collector` })}>
+        {t('becomeCollector')}
+      </button>
+    );
+  }
+  if (!collector.isMe) {
+    return (
+      <div className="flex flex-col gap-2 border-t-2 border-ink/15 pt-3 text-sm">
+        <p>{t('collectorIs', { name: collector.name })}</p>
+        <label className="flex cursor-pointer items-center gap-2.5 font-semibold">
+          <input type="checkbox" className="size-5 accent-[var(--color-signal)]" checked={item.myPaid} disabled={busy} onChange={() => run({ method: 'post', url: `/items/${item.id}/paid`, body: { paid: !item.myPaid } })} />
+          {t('iPaid', { name: collector.name })}
+        </label>
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-2 border-t-2 border-ink/15 pt-3 text-sm">
+      <p className="font-bold">{t('youCollect')}</p>
+      <ul className="flex flex-col gap-1">
+        {item.chippers.map((c) => (
+          <li key={c.name} className="flex justify-between gap-2">
+            <span>{c.name}, {som(c.amount)} {t('som')}</span>
+            <span className={c.paid ? 'font-bold' : 'text-mute'}>{t(c.paid ? 'paid' : 'notPaid')}</span>
+          </li>
+        ))}
+      </ul>
+      <button aria-describedby={named} className="min-h-11 cursor-pointer self-start font-semibold underline" onClick={() => run({ method: 'delete', url: `/items/${item.id}/collector` })}>{t('stopCollecting')}</button>
+    </div>
   );
 }
 
@@ -204,11 +294,16 @@ function OwnerView({ wishlist, items }) {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [adding, setAdding] = useState(false);
+  const [showQr, setShowQr] = useState(false);
+  const [thanks, setThanks] = useState(wishlist.thanks || '');
+  const past = isPast(wishlist);
   const url = `${window.location.origin}/w/${wishlist.slug}`;
   const picked = items.filter((i) => !i.isGroupGift && i.isReserved).length;
   const refresh = () => qc.invalidateQueries({ queryKey: ['wishlist', wishlist.slug] });
 
   const removeItem = useMutation({ mutationFn: (id) => api.delete(`/items/${id}`), onSuccess: refresh });
+  const receive = useMutation({ mutationFn: (item) => api.patch(`/items/${item.id}`, { received: !item.received }), onSuccess: refresh });
+  const saveThanks = useMutation({ mutationFn: () => api.patch(`/wishlists/${wishlist.id}`, { thanks }), onSuccess: refresh });
   const removeList = useMutation({ mutationFn: () => api.delete(`/wishlists/${wishlist.id}`), onSuccess: () => navigate('/dashboard') });
 
   const [copied, setCopied] = useState('');
@@ -249,6 +344,7 @@ function OwnerView({ wishlist, items }) {
             <a className="btn btn-outline" href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(wishlist.title)}`} target="_blank" rel="noreferrer">
               <Send size={18} /> Telegram
             </a>
+            <button className="btn btn-outline" onClick={() => setShowQr(true)}><Qr size={18} /> {t('qrCode')}</button>
           </div>
         </div>
         <div className="glass-dark flex flex-col justify-center gap-4 p-7">
@@ -262,16 +358,30 @@ function OwnerView({ wishlist, items }) {
         </div>
       </section>
 
+      <section className="mx-auto max-w-[1376px] px-4 pb-10 sm:px-8">
+        <form className="glass-card flex flex-col gap-3 p-7" onSubmit={(e) => { e.preventDefault(); saveThanks.mutate(); }}>
+          <label htmlFor="thanks" className="font-bold">{t('thanksTitle')}</label>
+          <span id="thanks-hint" className="-mt-1 text-sm text-mute">{t('thanksHint')}</span>
+          <textarea id="thanks" aria-describedby="thanks-hint" className="input min-h-20 py-3" maxLength={500} value={thanks} onChange={(e) => setThanks(e.target.value)} placeholder={t('thanksPh')} />
+          <div className="flex flex-wrap items-center gap-3">
+            <button className="btn btn-primary" disabled={saveThanks.isPending || thanks === (wishlist.thanks || '')}>{t(saveThanks.isPending ? 'saving' : 'thanksSave')}</button>
+            {saveThanks.isSuccess && thanks === wishlist.thanks && <span role="status" className="font-semibold">{t('saved')}</span>}
+            {saveThanks.isError && <span role="alert" className="font-semibold">{t.error(saveThanks.error)}</span>}
+          </div>
+        </form>
+      </section>
+
       <section className="mx-auto max-w-[1376px] px-4 pb-24 sm:px-8">
         <div className="grid gap-x-6 gap-y-8 [grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr))]">
           <button onClick={() => setAdding(true)} className="glass-card flex min-h-[400px] cursor-pointer flex-col items-center justify-center gap-3.5 edge hover:bg-paper/80">
-            <span className="grid size-16 place-items-center rounded-full bg-signal text-black"><Plus size={28} /></span>
+            <span className="grid size-16 place-items-center rounded-full bg-signal text-on-signal"><Plus size={28} /></span>
             <span className="text-lg font-bold">{t('addWish')}</span>
             <span className="max-w-[14em] text-center text-mute">{t('addTileText')}</span>
           </button>
 
           {items.map((item, index) => {
-            const hidden = !item.isGroupGift && item.isReserved;
+            const hidden = !item.isGroupGift && item.isReserved && !past && !item.received;
+            const given = item.isReserved || (item.isGroupGift && item.funded > 0);
             const pct = Math.round((item.funded / item.price) * 100) || 0;
             return (
               <Tag key={item.id} className="[contain-intrinsic-size:auto_540px] [content-visibility:auto] pb-3.5">
@@ -293,9 +403,15 @@ function OwnerView({ wishlist, items }) {
                     <span className="text-sm text-mute">{t('groupRaised', { p: pct })}</span>
                   </div>
                 )}
+                {item.from?.length > 0 && <p className="text-sm font-semibold">{t('fromNames', { names: item.from.join(', ') })}</p>}
+                {given && (
+                  <button aria-pressed={item.received} className={`btn min-h-11 text-sm ${item.received ? 'btn-primary' : 'btn-outline'}`} disabled={receive.isPending} onClick={() => receive.mutate(item)}>
+                    {item.received ? <><Check size={16} /> {t('received')}</> : t('markReceived')}
+                  </button>
+                )}
                 <div className="mt-auto flex min-h-11 items-center justify-between gap-2 border-t-2 border-ink/15 pt-2">
-                  <span className="text-sm font-semibold text-mute">{t(hidden ? 'statusReserved' : item.isGroupGift ? 'statusChipping' : 'statusWaiting')}</span>
-                  {!hidden && (
+                  <span className="text-sm font-semibold text-mute">{t(item.received ? 'received' : item.isReserved ? 'statusReserved' : item.isGroupGift ? 'statusChipping' : 'statusWaiting')}</span>
+                  {!item.isReserved && !(item.isGroupGift && item.funded > 0) && (
                     <button
                       className="grid size-11 cursor-pointer place-items-center rounded-full hover:bg-ink hover:text-paper"
                       aria-label={t('removeItem', { name: item.name })}
@@ -312,6 +428,7 @@ function OwnerView({ wishlist, items }) {
       </section>
 
       {adding && <AddItemModal list={wishlist} onClose={() => setAdding(false)} />}
+      {showQr && <QrDialog url={url} title={wishlist.title} onClose={() => setShowQr(false)} />}
     </>
   );
 }

@@ -8,6 +8,7 @@
   --color-signal: #FF4D00;
   --color-signal-deep: #C23800;
   --color-telegram: #2AABEE;
+  --color-on-signal: #000;
   --color-peach: #FFB59A;
   --color-stone: #D8D8D0;
   --color-mute: #4A4A45;
@@ -81,6 +82,8 @@
   .btn:disabled { opacity: .5; cursor: not-allowed; }
   .btn-primary { background: var(--color-signal); color: #000; }
   .btn-primary:hover:not(:disabled) { background: var(--color-ink); color: var(--color-paper); }
+  .btn-telegram { background: var(--color-telegram); color: #000; }
+  .btn-telegram:hover { background: var(--color-ink); color: var(--color-paper); }
   .btn-outline { background: var(--color-field); backdrop-filter: blur(16px); box-shadow: inset 0 0 0 2px var(--color-ink); color: var(--color-ink); }
   .btn-outline:hover:not(:disabled) { background: var(--color-ink); color: var(--color-paper); }
 

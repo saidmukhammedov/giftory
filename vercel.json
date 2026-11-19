@@ -36,6 +36,17 @@
       "destination": "/api"
     },
     {
+      "source": "/w/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(TelegramBot|facebookexternalhit|Twitterbot|WhatsApp|Slackbot|LinkedInBot|Discordbot|vkShare|SkypeUriPreview|Googlebot|bingbot|YandexBot|Applebot|Pinterest).*"
+        }
+      ],
+      "destination": "/api"
+    },
+    {
       "source": "/((?!assets/).*)",
       "destination": "/index.html"
     }
@@ -49,6 +60,12 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/bot/cron",
+      "schedule": "0 4 * * *"
     }
   ]
 }

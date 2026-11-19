@@ -1,10 +1,12 @@
 import app from '../server/src/app.js';
 import { migrate } from '../server/src/db.js';
+import { setupBot } from '../server/src/bot.js';
+import { webhookSecret } from '../server/src/routes/bot.js';
 
 let ready;
 
 export default async function handler(req, res) {
-  ready ??= migrate().catch((e) => {
+  ready ??= migrate().then(() => setupBot(webhookSecret()).catch(() => {})).catch((e) => {
     ready = undefined;
     throw e;
   });

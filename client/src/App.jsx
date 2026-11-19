@@ -14,6 +14,7 @@ const NotFound = page(() => import('./pages/NotFound'));
 const TelegramCallback = page(() => import('./pages/TelegramCallback'));
 const Profile = page(() => import('./pages/Profile'));
 const Legal = page(() => import('./pages/Legal'));
+const Reset = page(() => import('./pages/Reset'));
 
 function Private({ children }) {
   const { user, ready } = useAuth();
@@ -33,6 +34,8 @@ export default function App() {
       <Route path="/login" element={<Auth mode="login" />} />
       <Route path="/signup" element={<Auth mode="signup" />} />
       <Route path="/auth/telegram" element={<TelegramCallback />} />
+      <Route path="/forgot" element={<Reset mode="forgot" />} />
+      <Route path="/reset" element={<Reset mode="reset" />} />
       <Route path="/w/:slug" element={<Wishlist />} />
       <Route path="/dashboard" element={<Private><Dashboard /></Private>} />
       <Route path="/reserved" element={<Private><Reserved /></Private>} />

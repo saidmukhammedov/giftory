@@ -5,6 +5,10 @@ import itemRoutes from './routes/items.js';
 import imageRoutes from './routes/images.js';
 import telegramRoutes from './routes/telegram.js';
 import analyticsRoutes from './routes/analytics.js';
+import followRoutes from './routes/follows.js';
+import previewRoutes from './routes/preview.js';
+import botRoutes from './routes/bot.js';
+import ogRoutes from './routes/og.js';
 
 const app = express();
 
@@ -20,9 +24,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/wishlists', wishlistRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/images', imageRoutes);
+app.use('/api/follows', followRoutes);
+app.use('/api/preview', previewRoutes);
+app.use('/api/bot', botRoutes);
+app.use(ogRoutes);
 
 app.use((err, _req, res, _next) => {
-  if (err.code === '22P02') return res.status(404).json({ message: 'Not found' });
+  if (err.code === '22P02' || err.code === '23503') return res.status(404).json({ message: 'Not found' });
   if (err.code === '23514' || err.code === '22007') return res.status(400).json({ message: 'Check the values you entered' });
   if (err.type === 'entity.too.large') return res.status(413).json({ message: 'That photo is too big. Try a smaller one.' });
   if (!err.status) console.error(err);

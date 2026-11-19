@@ -16,7 +16,7 @@ router.post('/', requireAuth, express.raw({ type: TYPES, limit: '3mb' }), async 
 router.get('/:id', async (req, res) => {
   const img = await one('SELECT mime, data FROM images WHERE id = $1', [req.params.id]);
   if (!img) throw fail(404, 'Photo not found');
-  res.set({ 'Content-Type': img.mime, 'Cache-Control': 'public, max-age=31536000, immutable' }).send(img.data);
+  res.set({ 'Content-Type': img.mime, 'Cache-Control': 'public, max-age=31536000, s-maxage=86400, immutable' }).send(img.data);
 });
 
 export const removeImages = (urls) => {

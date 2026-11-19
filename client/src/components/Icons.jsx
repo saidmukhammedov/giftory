@@ -36,3 +36,7 @@ export const Close = (p) => <Svg sw={2.4} {...p}><path d="M6 6l12 12M18 6 6 18" 
 export const Sun = (p) => <Svg {...p}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></Svg>;
 export const Moon = (p) => <Svg {...p}><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" /></Svg>;
 export const Menu = (p) => <Svg sw={2.4} {...p}><path d="M4 7h16M4 12h16M4 17h16" /></Svg>;
+export const Qr = (p) => <Svg {...p}><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2M14 18h2v2M18 18h2v2" /></Svg>;
+export const Bell = (p) => <Svg {...p}><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4" /></Svg>;
+export const UserPlus = (p) => <Svg {...p}><circle cx="9" cy="8" r="4" /><path d="M2 21c0-4 3-6 7-6s7 2 7 6M19 8v6M16 11h6" /></Svg>;
+export const Wand = (p) => <Svg {...p}><path d="m4 20 11-11M14 4v3M19 9h-3M17.5 5.5l-2 2M18 14v.01M10 4v.01" /></Svg>;

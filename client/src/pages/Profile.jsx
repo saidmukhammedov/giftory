@@ -5,8 +5,8 @@ import api from '../api';
 import { useAuth } from '../auth';
 import { useT } from '../i18n';
 import { Page, Header, Footer, LangSwitch, ThemeButton } from '../components/Layout';
-import { Send } from '../components/Icons';
-import { connectTelegram, useTelegramEnabled } from '../telegram';
+import { Bell, Send } from '../components/Icons';
+import { connectTelegram, useProviders } from '../telegram';
 
 function Card({ title, children, tone = '' }) {
   const id = useId();
@@ -29,8 +29,9 @@ export default function Profile() {
   const { user, setUser, signOut } = useAuth();
   const t = useT();
   const navigate = useNavigate();
-  const telegramEnabled = useTelegramEnabled();
-  const [details, setDetails] = useState({ name: user.name, email: user.email || '' });
+  const providers = useProviders();
+  const telegramEnabled = providers?.telegram;
+  const [details, setDetails] = useState({ name: user.name, email: user.email || '', birthday: user.birthday || '' });
   const [pw, setPw] = useState({ currentPassword: '', newPassword: '' });
   const [confirmDelete, setConfirmDelete] = useState(false);
   const deleteButton = useRef(null);
@@ -52,6 +53,8 @@ export default function Profile() {
           <p className="mt-3 text-lg text-mute">{t('profileSub')}</p>
         </div>
 
+        {user.guest && <p className="glass-card border-l-8 border-signal p-5 font-semibold">{t('guestNotice')}</p>}
+
         <Card title={t('details')}>
           <form className="flex flex-col gap-5" onSubmit={(e) => { e.preventDefault(); saveDetails.mutate(); }}>
             <label className="flex flex-col gap-2 font-bold">
@@ -63,6 +66,11 @@ export default function Profile() {
               {t('email')}
               <input className="input font-normal" type="email" autoComplete="email" required={user.hasPassword} value={details.email} onChange={(e) => setDetails({ ...details, email: e.target.value })} aria-describedby="email-hint" />
               <span id="email-hint" className="text-sm font-normal text-mute">{t('emailHint')}</span>
+            </label>
+            <label className="flex flex-col gap-2 font-bold">
+              <span>{t('birthday')} <span className="font-normal text-mute">{t('optional')}</span></span>
+              <input className="input font-normal" type="date" max={new Date().toLocaleDateString('en-CA')} value={details.birthday} onChange={(e) => setDetails({ ...details, birthday: e.target.value })} aria-describedby="bday-hint" />
+              <span id="bday-hint" className="text-sm font-normal text-mute">{t('birthdayHint')}</span>
             </label>
             <Status m={saveDetails} ok={t('saved')} />
             <button className="btn btn-primary self-start" disabled={saveDetails.isPending}>{t(saveDetails.isPending ? 'saving' : 'saveChanges')}</button>
@@ -92,6 +100,15 @@ export default function Profile() {
           )}
         </Card>
 
+        {providers?.bot && user.telegram && (
+          <Card title={t('remindersTitle')}>
+            <p>{t(user.botOk ? 'remindersOn' : 'remindersOff')}</p>
+            {!user.botOk && (
+              <a className="btn btn-telegram self-start no-underline" href={`https://t.me/${providers.bot}?start=go`} target="_blank" rel="noreferrer"><Bell size={18} /> {t('remindersTurnOn')}</a>
+            )}
+          </Card>
+        )}
+
         {(telegramEnabled || user.telegram) && (
           <Card title={t('telegramTitle')}>
             <p>{t(user.telegram ? 'telegramOn' : 'telegramOffText')}</p>
@@ -102,7 +119,7 @@ export default function Profile() {
                 <button className="btn btn-outline self-start" disabled={!canDisconnect || disconnect.isPending} onClick={() => disconnect.mutate()}>{t('disconnectTelegram')}</button>
               </>
             ) : (
-              <button className="btn self-start bg-telegram text-black hover:bg-ink hover:text-paper" onClick={connectTelegram}><Send size={18} /> {t('connectTelegram')}</button>
+              <button className="btn self-start btn-telegram" onClick={connectTelegram}><Send size={18} /> {t('connectTelegram')}</button>
             )}
           </Card>
         )}
