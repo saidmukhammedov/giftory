@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import api from '../api';
 import { useAuth } from '../auth';
 import { useT } from '../i18n';
-import { Page, Header, Footer, LangSwitch, ThemeButton } from '../components/Layout';
+import { Page, Header, LangSwitch, ThemeButton } from '../components/Layout';
 import { Bell, Send } from '../components/Icons';
 import { connectTelegram, useProviders } from '../telegram';
 
@@ -152,7 +152,6 @@ export default function Profile() {
           )}
         </Card>
       </main>
-      <Footer />
     </Page>
   );
 }

@@ -18,6 +18,7 @@ export function Page({ shapes = [], children }) {
         />
       ))}
       {children}
+      <Footer />
     </div>
   );
 }
@@ -212,12 +213,12 @@ export function Header() {
   );
 }
 
-export function Footer({ crowd }) {
+export function Footer() {
   const { t } = usePrefs();
   const { user } = useAuth();
   return (
     <footer>
-      <div className={`mx-auto max-w-[1376px] px-4 sm:px-8 ${crowd ? 'pb-4' : 'pb-10'}`}>
+      <div className="mx-auto max-w-[1376px] px-4 pb-4 sm:px-8">
         <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-t-2 border-ink pt-7">
           <div className="flex items-center gap-4">
             <span className="display text-xl">giftory</span>
@@ -231,7 +232,7 @@ export function Footer({ crowd }) {
           </nav>
         </div>
       </div>
-      {crowd && <Crowd />}
+      <Crowd />
     </footer>
   );
 }

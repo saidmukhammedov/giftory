@@ -1,5 +1,5 @@
 import { usePrefs } from '../i18n';
-import { Page, Header, Footer } from '../components/Layout';
+import { Page, Header } from '../components/Layout';
 import { LEGAL, UPDATED } from '../legal';
 
 export default function Legal({ doc }) {
@@ -23,7 +23,6 @@ export default function Legal({ doc }) {
           ))}
         </article>
       </main>
-      <Footer />
     </Page>
   );
 }

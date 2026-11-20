@@ -1,7 +1,7 @@
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { usePrefs } from '../i18n';
-import { Page, Header, Footer } from '../components/Layout';
+import { Page, Header } from '../components/Layout';
 import { Tag, ItemTile } from '../components/Tag';
 import { Check } from '../components/Icons';
 
@@ -109,7 +109,6 @@ export default function Landing() {
       </section>
 
       </main>
-      <Footer crowd />
     </Page>
   );
 }

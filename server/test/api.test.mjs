@@ -208,6 +208,11 @@ const initData = (user, extra = {}) => {
 const app1 = (await call('POST', '/auth/webapp', { initData: initData({ id: 777, first_name: 'Kamola', language_code: 'uz', allows_write_to_pm: true }, { start_param: 'abc123' }) })).data;
 ok(app1.token && app1.user.telegram && app1.user.botOk && app1.startParam === 'abc123', 'Mini App logs in from Telegram data');
 ok((await call('POST', '/auth/webapp', { initData: initData({ id: 777 }).replace(/hash=\w+/, 'hash=' + 'a'.repeat(64)) })).status === 401, 'forged Mini App data rejected');
+nextTgUser = { sub: '9002', id: 888, name: 'Sardor TG' };
+const real = await telegramLogin();
+ok((await call('GET', '/auth/me', null, real.token)).data.user.email === 'sardor@t.uz', 'site login with the real Telegram id keeps the account linked earlier');
+const app2 = (await call('POST', '/auth/webapp', { initData: initData({ id: 888, first_name: 'Sardor' }) })).data;
+ok(app2.user.email === 'sardor@t.uz', 'Mini App opens the same account as the site');
 
 const tashkent = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tashkent' }));
 const inDays = (n) => { const d = new Date(tashkent); d.setDate(d.getDate() + n); return d.toLocaleDateString('en-CA'); };

@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api';
 import { useAuth } from '../auth';
 import { useT } from '../i18n';
-import { Page, Header, Footer } from '../components/Layout';
+import { Page, Header } from '../components/Layout';
 import { Tag, ItemTile } from '../components/Tag';
 import AddItemModal from '../components/AddItemModal';
 import { BirthdayBanner, isBirthdayToday } from '../components/Birthday';
@@ -39,7 +39,6 @@ export default function Wishlist() {
       <main id="main" tabIndex={-1} className="outline-none">
         {data && (data.isOwner ? <OwnerView {...data} /> : <FriendView {...data} />)}
       </main>
-      <Footer />
     </Page>
   );
 }

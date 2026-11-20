@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
-import { one } from '../db.js';
+import { one, query } from '../db.js';
 import { requireAuth, signToken } from '../middleware/auth.js';
 
 const router = Router();
@@ -60,7 +60,10 @@ router.get('/callback', async (req, res) => {
     });
     const { id_token } = await r.json();
     const { payload: tg } = await jwtVerify(id_token, keys(), { issuer: e.base, audience: String(e.id) });
-    const telegramId = String(tg.sub);
+    const telegramId = String(tg.id ?? tg.sub);
+    if (tg.id && String(tg.sub) !== telegramId) {
+      await query('UPDATE users SET telegram_id = $1 WHERE telegram_id = $2 AND NOT EXISTS (SELECT 1 FROM users WHERE telegram_id = $1)', [telegramId, String(tg.sub)]);
+    }
     const name = tg.name || [tg.given_name, tg.family_name].filter(Boolean).join(' ') || tg.preferred_username || 'Telegram user';
 
     let user;
