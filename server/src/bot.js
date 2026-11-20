@@ -24,7 +24,7 @@ export async function call(method, body) {
 
 export async function sendTo(user, key, vars, path = '/') {
   if (!user?.telegram_id || !user.bot_ok || !botEnabled()) return false;
-  const lang = user.lang || 'uz';
+  const lang = user.lang || 'en';
   const r = await call('sendMessage', {
     chat_id: user.telegram_id,
     text: text(lang, key, vars),

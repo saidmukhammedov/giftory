@@ -109,7 +109,7 @@ export default function Landing() {
       </section>
 
       </main>
-      <Footer />
+      <Footer crowd />
     </Page>
   );
 }

@@ -41,4 +41,4 @@ const TEXTS = {
 };
 
 export const text = (lang, key, vars = {}) =>
-  ((TEXTS[lang] || TEXTS.uz)[key] || TEXTS.en[key]).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+  ((TEXTS[lang] || TEXTS.en)[key] || TEXTS.en[key]).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');

@@ -12,7 +12,7 @@ router.post('/webhook', async (req, res) => {
   if (req.get('x-telegram-bot-api-secret-token') !== webhookSecret()) return res.status(401).end();
   const msg = req.body.message;
   if (msg?.text?.startsWith('/start') && msg.chat?.type === 'private') {
-    const lang = ['uz', 'ru', 'en'].includes(msg.from?.language_code) ? msg.from.language_code : 'uz';
+    const lang = ['uz', 'ru', 'en'].includes(msg.from?.language_code) ? msg.from.language_code : 'en';
     await query('UPDATE users SET bot_ok = true, lang = coalesce(lang, $2) WHERE telegram_id = $1', [String(msg.from.id), lang]);
     const slug = msg.text.split(' ')[1];
     const url = `${process.env.PUBLIC_URL}${slug && /^[\w-]{4,20}$/.test(slug) ? `/w/${slug}` : '/'}`;

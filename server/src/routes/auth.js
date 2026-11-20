@@ -66,7 +66,7 @@ router.post('/forgot', async (req, res) => {
   if (user) {
     const raw = crypto.randomBytes(32).toString('base64url');
     await query("INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES ($1, $2, now() + interval '1 hour')", [hash(raw), user.id]);
-    const lang = ['uz', 'ru', 'en'].includes(req.body.lang) ? req.body.lang : user.lang || 'uz';
+    const lang = ['uz', 'ru', 'en'].includes(req.body.lang) ? req.body.lang : user.lang || 'en';
     const link = `${process.env.PUBLIC_URL}/reset#token=${raw}`;
     try {
       await sendMail({ to: req.body.email.trim(), subject: text(lang, 'resetSubject'), body: text(lang, 'resetBody', { link }) });

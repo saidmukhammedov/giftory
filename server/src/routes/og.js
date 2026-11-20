@@ -20,7 +20,7 @@ router.get('/w/:slug', async (req, res) => {
   const site = process.env.PUBLIC_URL || `https://${req.get('host')}`;
   let html = await page(site);
   const list = await one(
-    `SELECT w.title, u.name AS owner, (SELECT image FROM items WHERE wishlist_id = w.id AND image IS NOT NULL ORDER BY created_at LIMIT 1) AS image
+    `SELECT w.title, u.name AS owner, u.lang, (SELECT image FROM items WHERE wishlist_id = w.id AND image IS NOT NULL ORDER BY created_at LIMIT 1) AS image
      FROM wishlists w JOIN users u ON u.id = w.owner_id WHERE w.slug = $1`,
     [req.params.slug]
   ).catch(() => null);
@@ -28,7 +28,7 @@ router.get('/w/:slug', async (req, res) => {
     const image = list.image ? new URL(list.image, site).href : `${site}/og.png`;
     const tags = {
       'og:title': list.title,
-      'og:description': text('uz', 'previewText', { owner: list.owner }),
+      'og:description': text(list.lang, 'previewText', { owner: list.owner }),
       'og:image': image,
       'og:url': `${site}/w/${req.params.slug}`,
     };

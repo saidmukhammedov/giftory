@@ -4,8 +4,8 @@ import en from './locales/en';
 import ru from './locales/ru';
 import uz from './locales/uz';
 
-const DICTS = { uz, ru, en };
-export const LANGS = ['uz', 'ru', 'en'];
+const DICTS = { en, uz, ru };
+export const LANGS = ['en', 'uz', 'ru'];
 const LOCALES = { ru: 'ru-RU', en: 'en-GB' };
 const UZ_MONTHS = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
 const UZ_DAYS = ['yakshanba', 'dushanba', 'seshanba', 'chorshanba', 'payshanba', 'juma', 'shanba'];
@@ -22,7 +22,7 @@ const PrefsContext = createContext(null);
 const saved = (k, fallback) => { try { return localStorage.getItem(k) || fallback; } catch { return fallback; } };
 
 export function PrefsProvider({ children }) {
-  const [lang, setLang] = useState(() => { const l = saved('giftory_lang', 'uz'); return DICTS[l] ? l : 'uz'; });
+  const [lang, setLang] = useState(() => { const l = saved('giftory_lang', 'en'); return DICTS[l] ? l : 'en'; });
   const [theme, setTheme] = useState(() => saved('giftory_theme', 'light'));
 
   useEffect(() => {

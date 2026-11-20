@@ -4,6 +4,7 @@ import { useAuth } from '../auth';
 import { LANGS, usePrefs } from '../i18n';
 import { Chevron, Close, Logo, Menu, Moon, Send, Sun } from './Icons';
 import { connectTelegram, useTelegramEnabled } from '../telegram';
+import Crowd from './Crowd';
 
 export function Page({ shapes = [], children }) {
   return (
@@ -23,16 +24,20 @@ export function Page({ shapes = [], children }) {
 
 const box = 'edge';
 
+const LANG_NAMES = { en: 'English', uz: 'O‘zbekcha', ru: 'Русский' };
+
 export function LangSwitch() {
   const { t, lang, setLang } = usePrefs();
+  const next = LANGS[(LANGS.indexOf(lang) + 1) % LANGS.length];
   return (
-    <div role="group" aria-label={t('language')} className={`flex ${box}`}>
-      {LANGS.map((l) => (
-        <button key={l} lang={l} aria-pressed={lang === l} onClick={() => setLang(l)} className={`min-h-11 min-w-11 cursor-pointer px-2 text-sm font-bold uppercase ${lang === l ? 'bg-ink text-paper' : 'hover:text-signal-deep'}`}>
-          {l}
-        </button>
-      ))}
-    </div>
+    <button
+      onClick={() => setLang(next)}
+      aria-label={`${t('language')}: ${LANG_NAMES[lang]}`}
+      title={LANG_NAMES[next]}
+      className={`min-h-11 min-w-11 cursor-pointer px-2.5 text-sm font-bold uppercase hover:bg-ink hover:text-paper ${box}`}
+    >
+      {lang}
+    </button>
   );
 }
 
@@ -207,23 +212,26 @@ export function Header() {
   );
 }
 
-export function Footer() {
+export function Footer({ crowd }) {
   const { t } = usePrefs();
   const { user } = useAuth();
   return (
-    <footer className="mx-auto max-w-[1376px] px-4 pb-10 sm:px-8">
-      <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-t-2 border-ink pt-7">
-        <div className="flex items-center gap-4">
-          <span className="display text-xl">giftory</span>
-          <span className="text-[15px] text-mute">{t('madeIn')}</span>
+    <footer>
+      <div className={`mx-auto max-w-[1376px] px-4 sm:px-8 ${crowd ? 'pb-4' : 'pb-10'}`}>
+        <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-t-2 border-ink pt-7">
+          <div className="flex items-center gap-4">
+            <span className="display text-xl">giftory</span>
+            <span className="text-[15px] text-mute">{t('madeIn')}</span>
+          </div>
+          <nav aria-label="Legal" className="flex flex-wrap gap-x-5 gap-y-1 text-[15px]">
+            <Link to="/privacy" className="min-h-11 content-center">{t('privacy')}</Link>
+            <Link to="/terms" className="min-h-11 content-center">{t('terms')}</Link>
+            <Link to="/cookies" className="min-h-11 content-center">{t('cookies')}</Link>
+            {!user && <Link to="/signup" className="min-h-11 content-center font-semibold">{t('createOwn')}</Link>}
+          </nav>
         </div>
-        <nav aria-label="Legal" className="flex flex-wrap gap-x-5 gap-y-1 text-[15px]">
-          <Link to="/privacy" className="min-h-11 content-center">{t('privacy')}</Link>
-          <Link to="/terms" className="min-h-11 content-center">{t('terms')}</Link>
-          <Link to="/cookies" className="min-h-11 content-center">{t('cookies')}</Link>
-          {!user && <Link to="/signup" className="min-h-11 content-center font-semibold">{t('createOwn')}</Link>}
-        </nav>
       </div>
+      {crowd && <Crowd />}
     </footer>
   );
 }

@@ -23,9 +23,9 @@ export class ErrorBoundary extends Component {
   render() {
     if (!this.state.failed) return this.props.children;
     const [text, button] = {
+      uz: ['Sahifa yuklanmadi.', 'Yangilash'],
       ru: ['Страница не загрузилась.', 'Обновить'],
-      en: ["The page didn't load.", 'Reload'],
-    }[document.documentElement.lang] || ['Sahifa yuklanmadi.', 'Yangilash'];
+    }[document.documentElement.lang] || ["The page didn't load.", 'Reload'];
     return (
       <div className="boot" role="alert">
         <span className="display">giftory</span>

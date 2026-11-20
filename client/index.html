@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="uz">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Giftory: sovg‘alar ro‘yxati</title>
-    <meta name="description" content="Sovg‘alar ro‘yxatini tuzing, bitta havolani ulashing, do‘stlar sovg‘ani yashirincha band qiladi. Hech kim takrorlamaydi." />
-    <meta property="og:title" content="Giftory: sovg‘alar ro‘yxati" />
-    <meta property="og:description" content="Sovg‘alar ro‘yxatini tuzing, bitta havolani ulashing, do‘stlar sovg‘ani yashirincha band qiladi." />
+    <title>Giftory: shared wishlists</title>
+    <meta name="description" content="Make a wishlist, share one link, and friends reserve gifts in secret. Nobody doubles up." />
+    <meta property="og:title" content="Giftory: shared wishlists" />
+    <meta property="og:description" content="Make a wishlist, share one link, and friends reserve gifts in secret." />
     <meta property="og:image" content="https://giftory.uz/og.png" />
     <meta property="og:url" content="https://giftory.uz" />
     <meta property="og:type" content="website" />
@@ -19,18 +19,18 @@
     <script>
       try {
         if (localStorage.getItem('giftory_theme') === 'dark') document.documentElement.classList.add('dark');
-        document.documentElement.lang = localStorage.getItem('giftory_lang') || 'uz';
+        document.documentElement.lang = localStorage.getItem('giftory_lang') || 'en';
       } catch (e) {}
     </script>
     <style>html{background:#F4F4F1;color:#000;font-family:system-ui,sans-serif}html.dark{background:#161614;color:#F2F1EC}</style>
   </head>
   <body>
     <div id="root">
-      <div class="boot"><span class="display">giftory</span><p class="boot-late">Uzoq yuklanyaptimi? <a href="/">Sahifani yangilang</a></p></div>
+      <div class="boot"><span class="display">giftory</span><p class="boot-late">Taking a while? <a href="/">Reload the page</a></p></div>
     </div>
     <script>
       try {
-        var late = { ru: ['Долго загружается?', 'Обновите страницу'], en: ['Taking a while?', 'Reload the page'] }[document.documentElement.lang];
+        var late = { uz: ['Uzoq yuklanyaptimi?', 'Sahifani yangilang'], ru: ['Долго загружается?', 'Обновите страницу'] }[document.documentElement.lang];
         if (late) {
           var p = document.querySelector('.boot-late');
           p.firstChild.nodeValue = late[0] + ' ';
