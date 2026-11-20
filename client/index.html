@@ -26,8 +26,18 @@
   </head>
   <body>
     <div id="root">
-      <div class="boot"><span class="display">giftory</span><p class="boot-late">Taking a while? <a href="/">Reload the page</a></p></div>
+      <div class="boot"><span class="display">giftory</span><p class="boot-late">Uzoq yuklanyaptimi? <a href="/">Sahifani yangilang</a></p></div>
     </div>
+    <script>
+      try {
+        var late = { ru: ['Долго загружается?', 'Обновите страницу'], en: ['Taking a while?', 'Reload the page'] }[document.documentElement.lang];
+        if (late) {
+          var p = document.querySelector('.boot-late');
+          p.firstChild.nodeValue = late[0] + ' ';
+          p.lastChild.textContent = late[1];
+        }
+      } catch (e) {}
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -22,12 +22,15 @@ export class ErrorBoundary extends Component {
   componentDidCatch(error) { console.error(error); }
   render() {
     if (!this.state.failed) return this.props.children;
-    const ru = document.documentElement.lang === 'ru';
+    const [text, button] = {
+      ru: ['Страница не загрузилась.', 'Обновить'],
+      en: ["The page didn't load.", 'Reload'],
+    }[document.documentElement.lang] || ['Sahifa yuklanmadi.', 'Yangilash'];
     return (
       <div className="boot" role="alert">
         <span className="display">giftory</span>
-        <p className="boot-text">{ru ? 'Страница не загрузилась.' : "The page didn't load."}</p>
-        <button className="btn btn-primary" onClick={() => location.reload()}>{ru ? 'Обновить' : 'Reload'}</button>
+        <p className="boot-text">{text}</p>
+        <button className="btn btn-primary" onClick={() => location.reload()}>{button}</button>
       </div>
     );
   }
