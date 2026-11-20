@@ -27,22 +27,21 @@ function Walker({ id, dir, dur, at, bubble, stop, near, i }) {
   const style = {
     '--h': `${(near ? 84 + (i % 4) * 2 : 50 + (i % 4) * 2) * view[3] / 2980}%`,
     '--b': `${near ? -20 + (i % 3) * 2 : 26 + (i % 3) * 2}%`,
-    '--x': `${at * 100}cqw`,
-    aspectRatio: `${view[2]} / ${view[3]}`,
-    animationName: `walk-${dir}${stop ? '-stop' : ''}`,
-    animationDuration: `${dur}s`,
-    animationDelay: `${-at * dur}s`,
+    '--x': `${(dir === 'r' ? at : 1 - at) * 100}%`,
+    '--walk': `${stop ? 'walk-stop' : 'walk'} ${dur}s linear ${-at * dur}s infinite ${dir === 'r' ? 'normal' : 'reverse'} both`,
   };
   return (
     <div className={`walker ${i % 2 ? 'walker-extra' : ''}`} style={style}>
-      <svg viewBox={view.join(' ')} className={dir === 'l' ? '-scale-x-100' : ''} style={{ animationDelay: `${-(i % 7) * 0.19}s` }}>
-        <use href={`/crowd.svg#${id}`} />
-      </svg>
-      {bubble && (
-        <span className="bubble" style={{ animationDuration: `${7 + (i % 4)}s`, animationDelay: `${-(i % 5) * 1.6}s`, top: id === 'balloons' ? '14%' : '-9%' }}>
-          <svg viewBox="0 0 24 24">{BUBBLE[bubble]}</svg>
-        </span>
-      )}
+      <div className="walker-body" style={{ aspectRatio: `${view[2]} / ${view[3]}` }}>
+        <svg viewBox={view.join(' ')} className={dir === 'l' ? '-scale-x-100' : ''} style={{ animationDelay: `${-(i % 7) * 0.19}s` }}>
+          <use href={`/crowd.svg#${id}`} />
+        </svg>
+        {bubble && (
+          <span className="bubble" style={{ animationDuration: `${7 + (i % 4)}s`, animationDelay: `${-(i % 5) * 1.6}s`, top: id === 'balloons' ? '14%' : '-9%' }}>
+            <svg viewBox="0 0 24 24">{BUBBLE[bubble]}</svg>
+          </span>
+        )}
+      </div>
     </div>
   );
 }

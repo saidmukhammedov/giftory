@@ -124,16 +124,16 @@
 .crowd-word { position: absolute; inset: 0 0 36%; display: grid; place-items: center; white-space: nowrap; font-size: min(11vw, 160px); color: color-mix(in srgb, var(--color-ink) 10%, var(--color-paper)); }
 .crowd-word > span > span { display: inline-block; opacity: 0; }
 .crowd-seen .crowd-word > span > span { animation: rise .9s cubic-bezier(.2, 1.3, .4, 1) calc(var(--i) * 80ms + .2s) both, hop 7s ease-in-out calc(var(--i) * 90ms + 2s) infinite; }
-.walker { position: absolute; left: 0; bottom: var(--b); height: var(--h); animation: linear infinite both; will-change: transform; }
-.walker > svg { display: block; height: 100%; width: 100%; overflow: visible; transform-origin: 50% 100%; animation: sway 1.4s ease-in-out infinite alternate; }
-.dark .walker > svg { filter: brightness(.88); }
-.bubble { position: absolute; left: 50%; width: clamp(24px, 2.8cqw, 40px); aspect-ratio: 1; margin-left: calc(clamp(24px, 2.8cqw, 40px) / -2); padding: 4px; border-radius: 999px; background: var(--color-paper); box-shadow: inset 0 0 0 2px var(--color-ink); opacity: 0; animation: bubble 8s ease-out infinite; }
+.walker { position: absolute; left: 0; width: 100%; bottom: var(--b); height: var(--h); pointer-events: none; }
+.walker, .walker-body { animation: var(--walk); will-change: transform; }
+.walker-body { position: absolute; right: 100%; height: 100%; }
+.walker-body > svg { display: block; height: 100%; width: 100%; overflow: visible; transform-origin: 50% 100%; animation: sway 1.4s ease-in-out infinite alternate; }
+.dark .walker-body > svg { filter: brightness(.88); }
+.bubble { position: absolute; left: 50%; width: clamp(24px, 2.8vw, 40px); aspect-ratio: 1; margin-left: calc(clamp(24px, 2.8vw, 40px) / -2); padding: 4px; border-radius: 999px; background: var(--color-paper); box-shadow: inset 0 0 0 2px var(--color-ink); opacity: 0; animation: bubble 8s ease-out infinite; }
 .bubble svg { width: 100%; height: 100%; }
 @container (max-width: 700px) { .walker-extra { display: none; } }
-@keyframes walk-r { from { transform: translateX(-100%); } to { transform: translateX(100cqw); } }
-@keyframes walk-l { from { transform: translateX(100cqw); } to { transform: translateX(-100%); } }
-@keyframes walk-r-stop { from { transform: translateX(-100%); } 40%, 58% { transform: translateX(calc(-100% + (100cqw + 100%) * .4)); } to { transform: translateX(100cqw); } }
-@keyframes walk-l-stop { from { transform: translateX(100cqw); } 40%, 58% { transform: translateX(calc(100cqw - (100cqw + 100%) * .4)); } to { transform: translateX(-100%); } }
+@keyframes walk { from { transform: translateX(0); } to { transform: translateX(100%); } }
+@keyframes walk-stop { from { transform: translateX(0); } 40%, 58% { transform: translateX(40%); } to { transform: translateX(100%); } }
 @keyframes sway { from { rotate: -.7deg; } to { rotate: .7deg; } }
 @keyframes bubble { 0%, 60% { opacity: 0; transform: translateY(30%) scale(.4); } 66% { opacity: 1; transform: none; } 70%, 86% { opacity: 1; transform: scale(.92); } 96%, 100% { opacity: 0; transform: translateY(-50%) scale(.8); } }
 @keyframes rise { from { opacity: 0; translate: 0 45%; } to { opacity: 1; } }
@@ -141,7 +141,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .walker { animation: none; transform: translateX(var(--x)); }
-  .walker > svg, .bubble, .crowd-seen .crowd-word > span > span { animation: none; opacity: 1; }
+  .walker-body { animation: none; transform: translateX(100%); }
+  .walker-body > svg, .bubble, .crowd-seen .crowd-word > span > span { animation: none; opacity: 1; }
   .bubble { display: none; }
   .crowd-layer { translate: none; }
   .frost, .confetti, .bow-pop { animation: fade-in .25s ease-out both; }
