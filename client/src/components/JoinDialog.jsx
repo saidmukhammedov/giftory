@@ -37,7 +37,7 @@ export default function JoinDialog({ next, onClose, onJoined }) {
           <input type="checkbox" required className="mt-0.5 size-5 shrink-0 accent-[var(--color-signal)]" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
           <span>{t.rich('agreeTerms', { terms: <Link to="/terms" target="_blank">{t('termsShort')}</Link>, privacy: <Link to="/privacy" target="_blank">{t('privacyShort')}</Link> })}</span>
         </label>
-        {join.isError && <p role="alert" className="bg-ink p-3 text-sm font-semibold text-paper">{t.error(join.error)}</p>}
+        {join.isError && <p role="alert" className="rounded-2xl bg-ink p-3 text-sm font-semibold text-paper">{t.error(join.error)}</p>}
         <button className="btn btn-primary" disabled={join.isPending}>{t(join.isPending ? 'wait' : 'joinSubmit')}</button>
       </form>
       <p className="text-sm text-mute">{t('haveAccount')} <Link to={`/login?next=${encodeURIComponent(next)}`}>{t('login')}</Link></p>

@@ -5,7 +5,8 @@ import api from '../api';
 import { useAuth } from '../auth';
 import { useT } from '../i18n';
 import { Page, PrefsControls } from '../components/Layout';
-import { Bow, Logo, Send } from '../components/Icons';
+import { Logo, Send } from '../components/Icons';
+import Gift3D, { GIFT_COLORS } from '../components/Gift3D';
 import { useProviders, telegramLoginUrl, TELEGRAM_ERRORS } from '../telegram';
 
 export default function Auth({ mode }) {
@@ -47,7 +48,7 @@ export default function Auth({ mode }) {
               <h1 className="display text-5xl">{t(signup ? 'signupTitle' : 'loginTitle')}</h1>
               <p className="mt-3 text-lg text-mute">{t(signup ? 'signupSub' : 'loginSub')}</p>
             </div>
-            {tgError && <p role="alert" className="bg-ink p-3 font-semibold text-paper">{t(tgError)}</p>}
+            {tgError && <p role="alert" className="rounded-2xl bg-ink p-3 font-semibold text-paper">{t(tgError)}</p>}
             {telegram && (
               <>
                 <a href={telegramLoginUrl(next)} className="btn min-h-14 btn-telegram no-underline" aria-describedby="tg-consent">
@@ -88,7 +89,7 @@ export default function Auth({ mode }) {
                 <span>{t.rich('agreeTerms', { terms: <Link to="/terms" className="font-semibold">{t('termsShort')}</Link>, privacy: <Link to="/privacy" className="font-semibold">{t('privacyShort')}</Link> })}</span>
               </label>
             )}
-            {submit.isError && <p role="alert" className="bg-ink p-3 font-semibold text-paper">{t.error(submit.error)}</p>}
+            {submit.isError && <p role="alert" className="rounded-2xl bg-ink p-3 font-semibold text-paper">{t.error(submit.error)}</p>}
             <button className="btn btn-primary mt-1 min-h-14" disabled={submit.isPending}>
               {submit.isPending ? t('wait') : t(signup ? 'createAccount' : 'login')}
             </button>
@@ -99,9 +100,10 @@ export default function Auth({ mode }) {
           </form>
 
           <div aria-hidden="true" className="relative hidden min-h-[460px] place-items-center md:grid">
-            <div className="relative aspect-square w-[min(380px,80%)] -rotate-6 overflow-hidden bg-signal">
-              <span className="absolute -bottom-[10%] -right-[10%] size-3/5 rounded-full bg-ink" />
-              <div className="frost"><Bow width={150} /></div>
+            <div className="relative">
+              <Gift3D size={190} colors={GIFT_COLORS[1]} />
+              <Gift3D size={92} colors={GIFT_COLORS[0]} className="absolute -left-28 bottom-0" />
+              <Gift3D size={70} colors={GIFT_COLORS[2]} className="absolute -right-20 bottom-3" />
             </div>
           </div>
         </main>

@@ -19,7 +19,7 @@ export default function Reserved() {
           <p className="mt-3 text-lg text-mute">{t('reservedSub')}</p>
         </div>
         {isLoading && <p className="text-mute">{t('loading')}</p>}
-        {isError && <p role="alert" className="bg-ink p-4 font-semibold text-paper">{t.error(error)}</p>}
+        {isError && <p role="alert" className="rounded-2xl bg-ink p-4 font-semibold text-paper">{t.error(error)}</p>}
         {data?.length === 0 && (
           <div className="glass-card flex flex-col items-center gap-3 px-6 py-16 text-center">
             <p className="display text-3xl">{t('noneReservedTitle')}</p>
@@ -31,7 +31,7 @@ export default function Reserved() {
             <Tag key={item.id}>
               <ItemTile item={item} index={i} />
               <div>
-                {item.received && <span className="mb-2 inline-block bg-ink px-2.5 py-1 text-[13px] font-bold text-paper">{t('received')}</span>}
+                {item.received && <span className="mb-2 inline-block bg-ink rounded-full px-3 py-1 text-[13px] font-bold text-paper">{t('received')}</span>}
                 <h2 className="text-lg font-bold leading-tight">{item.name}</h2>
                 <p className="display text-lg tracking-tight">{item.myContribution ? t('youGave', { x: som(item.myContribution) }) : som(item.price)} {t('som')}</p>
               </div>

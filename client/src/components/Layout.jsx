@@ -132,7 +132,7 @@ export function Header() {
 
   const logout = () => { signOut(); navigate('/'); };
   const links = user ? [['/dashboard', 'myLists'], ['/reserved', 'reservedNav'], ['/profile', 'profile']] : [];
-  const desk = ({ isActive }) => `px-3 py-2.5 font-semibold no-underline ${isActive ? 'bg-ink text-paper' : 'hover:text-signal-deep'}`;
+  const desk = ({ isActive }) => `px-3 py-2.5 font-semibold no-underline ${isActive ? 'rounded-full bg-ink text-paper' : 'hover:text-signal-deep'}`;
   const mob = ({ isActive }) => `flex min-h-14 items-center justify-between border-b-2 border-ink/15 px-1 text-xl font-bold no-underline ${isActive ? 'text-signal-deep' : ''}`;
 
   return (
@@ -209,7 +209,7 @@ export function Footer() {
   const { t } = usePrefs();
   const { user } = useAuth();
   return (
-    <footer>
+    <footer className="legacy">
       <div className="mx-auto max-w-[1376px] px-4 pb-4 sm:px-8">
         <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-t-2 border-ink pt-7">
           <div className="flex items-center gap-4">

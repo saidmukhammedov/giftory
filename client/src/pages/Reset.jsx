@@ -53,7 +53,7 @@ export default function Reset({ mode }) {
                   )}
                   {!forgot && <span className="text-sm font-normal text-mute">{t('pwHint')}</span>}
                 </label>
-                {m.isError && <p role="alert" className="bg-ink p-3 font-semibold text-paper">{t.error(m.error)}</p>}
+                {m.isError && <p role="alert" className="rounded-2xl bg-ink p-3 font-semibold text-paper">{t.error(m.error)}</p>}
                 <button className="btn btn-primary" disabled={m.isPending}>{t(m.isPending ? 'wait' : forgot ? 'forgotSend' : 'resetSave')}</button>
               </>
             )}

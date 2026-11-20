@@ -72,7 +72,7 @@ function Thanks({ wishlist }) {
   if (!wishlist.thanks) return null;
   return (
     <section className="mx-auto max-w-[1376px] px-4 pb-8 sm:px-8">
-      <div className="glass-card flex flex-col gap-2 border-l-8 border-signal p-6">
+      <div className="flex flex-col gap-2 rounded-[28px] bg-sun p-7 text-[#17171A]">
         <p className="font-bold">{t('thanksFrom', { name: wishlist.owner.name })}</p>
         <p className="max-w-[40em] text-lg">“{wishlist.thanks}”</p>
       </div>
@@ -170,9 +170,9 @@ function FriendView({ wishlist, items }) {
                 <ItemTile item={item} index={index} wrapped={!item.isGroupGift && item.isReserved} />
                 <div className="flex flex-col gap-1.5">
                   <div className="flex flex-wrap gap-2">
-                    {item.isGroupGift && <span className="bg-stone px-2.5 py-1 text-[13px] font-bold">{t('groupGift')}</span>}
-                    {!item.isReserved && PRIORITY[item.priority] && <span className={`px-2.5 py-1 text-[13px] font-bold ${PRIORITY[item.priority][1]}`}>{t(PRIORITY[item.priority][0])}</span>}
-                    {item.received && isMine(item) && <span className="bg-ink px-2.5 py-1 text-[13px] font-bold text-paper">{t('received')}</span>}
+                    {item.isGroupGift && <span className="bg-sun text-[#17171A] rounded-full px-3 py-1 text-[13px] font-bold">{t('groupGift')}</span>}
+                    {!item.isReserved && PRIORITY[item.priority] && <span className={`rounded-full px-3 py-1 text-[13px] font-bold ${PRIORITY[item.priority][1]}`}>{t(PRIORITY[item.priority][0])}</span>}
+                    {item.received && isMine(item) && <span className="bg-ink rounded-full px-3 py-1 text-[13px] font-bold text-paper">{t('received')}</span>}
                   </div>
                   <h2 id={named} className="text-xl font-bold leading-tight">{item.name}</h2>
                   <Price item={item} />
@@ -192,7 +192,7 @@ function FriendView({ wishlist, items }) {
                   )}
                   {item.reservedByMe && (
                     <>
-                      <span id={`mine-${item.id}`} tabIndex={-1} className="btn btn-outline cursor-default shadow-[inset_0_0_0_2px_var(--color-signal)] hover:!bg-field hover:!text-ink"><Check size={18} /> {t('reservedByYou')}</span>
+                      <span id={`mine-${item.id}`} tabIndex={-1} className="btn cursor-default !bg-sheet !shadow-none !filter-none"><Check size={18} className="text-signal-deep" /> {t('reservedByYou')}</span>
                       {!past && !item.received && (
                         <button aria-describedby={named} className="min-h-11 cursor-pointer font-semibold underline" onClick={() => run({ method: 'delete', url: `/items/${item.id}/reserve`, focus: [`reserve-${item.id}`] })}>{t('cancelReservation')}</button>
                       )}
@@ -347,13 +347,13 @@ function OwnerView({ wishlist, items }) {
             <button className="btn btn-outline" onClick={() => { markShared(); setShowQr(true); }}><Qr size={18} /> {t('qrCode')}</button>
           </div>
         </div>
-        <div className="flex flex-col justify-center gap-4 border-y-2 border-ink py-6">
+        <div className="glass-card flex flex-col justify-center gap-4 p-7">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <span className="display text-3xl">{t('pickedOf', { p: picked, t: items.length })}</span>
             <span className="text-mute">{t('namesHidden')}</span>
           </div>
           <div className="flex gap-1.5" aria-hidden="true">
-            {items.map((i, n) => <span key={i.id} className={`h-2.5 flex-1 ${n < picked ? 'bg-signal' : 'bg-ink/15'}`} />)}
+            {items.map((i, n) => <span key={i.id} className={`seg ${n < picked ? 'seg-on' : ''}`} />)}
           </div>
         </div>
       </section>
@@ -373,8 +373,8 @@ function OwnerView({ wishlist, items }) {
 
       <section className="mx-auto max-w-[1376px] px-4 pb-24 sm:px-8">
         <div className="grid gap-x-6 gap-y-8 [grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr))]">
-          <button onClick={() => setAdding(true)} className="glass-card flex min-h-[400px] cursor-pointer flex-col items-center justify-center gap-3.5 edge hover:bg-paper/80">
-            <span className="grid size-16 place-items-center rounded-full bg-signal text-on-signal"><Plus size={28} /></span>
+          <button onClick={() => setAdding(true)} className="group flex min-h-[400px] cursor-pointer flex-col items-center justify-center gap-3.5 rounded-[28px] border-2 border-dashed border-ink/20 p-6 transition-colors hover:border-signal hover:bg-card">
+            <span className="grid size-16 place-items-center rounded-full bg-signal text-on-signal shadow-[0_5px_0_#B83700] transition-transform group-hover:-translate-y-1"><Plus size={28} /></span>
             <span className="text-lg font-bold">{t('addWish')}</span>
             <span className="max-w-[14em] text-center text-mute">{t('addTileText')}</span>
           </button>

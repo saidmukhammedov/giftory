@@ -16,7 +16,7 @@ const BITS = [
 export function BirthdayBanner({ name, picked }) {
   const t = useT();
   return (
-    <section aria-labelledby="bday" className="relative isolate overflow-hidden bg-signal px-6 py-10 text-on-signal sm:px-12 sm:py-14">
+    <section aria-labelledby="bday" className="relative isolate overflow-hidden rounded-[32px] bg-signal px-6 py-10 text-on-signal sm:px-12 sm:py-14">
       {BITS.map(([l, top, size, shape, color, rot], i) => (
         <span
           key={i}

@@ -20,7 +20,7 @@ function Card({ title, children, tone = '' }) {
 
 function Status({ m, ok }) {
   const t = useT();
-  if (m.isError) return <p role="alert" className="bg-ink p-3 font-semibold text-paper">{t.error(m.error)}</p>;
+  if (m.isError) return <p role="alert" className="rounded-2xl bg-ink p-3 font-semibold text-paper">{t.error(m.error)}</p>;
   if (m.isSuccess) return <p role="status" className="font-semibold text-signal-deep">{ok}</p>;
   return null;
 }

@@ -63,9 +63,9 @@ export default function AddItemModal({ list, onClose }) {
       <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="add-title" onClick={(e) => e.stopPropagation()} className="h-full w-full max-w-[540px]">
       <form
         onSubmit={(e) => { e.preventDefault(); add.mutate(); }}
-        className="glass flex h-full flex-col bg-paper/80"
+        className="flex h-full flex-col bg-card shadow-[0_40px_80px_-20px_rgb(0_0_0/.5)] sm:rounded-l-[32px]"
       >
-        <div className="flex items-start justify-between gap-4 border-b-2 border-ink px-7 py-6">
+        <div className="flex items-start justify-between gap-4 border-b-2 border-ink/10 px-7 py-6">
           <div>
             <h2 id="add-title" className="display text-4xl">{t('addWish')}</h2>
             <p className="mt-1 text-mute">{t('toList', { t: list.title })}</p>
@@ -85,7 +85,7 @@ export default function AddItemModal({ list, onClose }) {
                 <Wand size={18} /> {t(fill.isPending ? 'filling' : 'fillIn')}
               </button>
             </div>
-            {fill.isError && <p role="alert" className="bg-ink p-3 text-sm font-semibold text-paper">{t.error(fill.error)}</p>}
+            {fill.isError && <p role="alert" className="rounded-2xl bg-ink p-3 text-sm font-semibold text-paper">{t.error(fill.error)}</p>}
             {fill.isSuccess && <p role="status" className="text-sm font-semibold">{t('filled')}</p>}
           </div>
 
@@ -108,7 +108,7 @@ export default function AddItemModal({ list, onClose }) {
                 onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={drop}
-                className={`relative flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-3 p-6 text-center edge focus-within:outline-3 focus-within:outline-signal ${dragging ? 'bg-signal/20' : 'bg-field hover:bg-paper'}`}
+                className={`relative flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-3 rounded-[22px] border-2 border-dashed border-ink/20 p-6 text-center focus-within:outline-3 focus-within:outline-signal ${dragging ? 'bg-signal/20' : 'bg-field hover:border-signal'}`}
               >
                 <input type="file" accept="image/*" className="sr-only" onChange={pick} disabled={upload.isPending} />
                 <span className="grid size-16 place-items-center rounded-full bg-signal text-on-signal"><Gift size={30} /></span>
@@ -117,7 +117,7 @@ export default function AddItemModal({ list, onClose }) {
               </label>
             )}
 
-            {upload.isError && <p role="alert" className="bg-ink p-3 text-sm font-semibold text-paper">{t.error(upload.error)}</p>}
+            {upload.isError && <p role="alert" className="rounded-2xl bg-ink p-3 text-sm font-semibold text-paper">{t.error(upload.error)}</p>}
 
             {!form.image && (linkMode ? (
               <div className="flex gap-2">
@@ -153,11 +153,11 @@ export default function AddItemModal({ list, onClose }) {
 
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-2 font-bold">{t('howMuch')}</legend>
-            <div className="flex gap-1 bg-field p-1 edge">
+            <div className="flex gap-1 rounded-full bg-sheet p-1">
               {PRIORITIES.map((v) => (
                 <label key={v} className="flex-1 cursor-pointer">
                   <input type="radio" name="priority" value={v} checked={form.priority === v} onChange={() => setForm({ ...form, priority: v })} className="peer sr-only" />
-                  <span className="flex min-h-11 items-center justify-center px-2 text-center text-sm font-semibold peer-checked:bg-ink peer-checked:text-paper peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-signal hover:bg-paper peer-checked:hover:bg-ink">
+                  <span className="flex min-h-11 items-center justify-center rounded-full px-2 text-center text-sm font-semibold peer-checked:bg-ink peer-checked:text-paper peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-signal hover:bg-paper peer-checked:hover:bg-ink">
                     {t.prio(v)}
                   </span>
                 </label>
@@ -165,7 +165,7 @@ export default function AddItemModal({ list, onClose }) {
             </div>
           </fieldset>
 
-          <div className="glass-card flex items-center justify-between gap-4 p-4">
+          <div className="flex items-center justify-between gap-4 rounded-[22px] bg-sheet p-4">
             <div>
               <p id="group-label" className="font-bold">{t('groupToggle')}</p>
               <p className="text-sm text-mute">{t('groupToggleHint')}</p>
@@ -176,16 +176,16 @@ export default function AddItemModal({ list, onClose }) {
               aria-checked={form.isGroupGift}
               aria-labelledby="group-label"
               onClick={() => setForm({ ...form, isGroupGift: !form.isGroupGift })}
-              className={`flex h-[34px] w-[58px] shrink-0 cursor-pointer p-1 ${form.isGroupGift ? 'justify-end bg-signal' : 'justify-start bg-ink/15'}`}
+              className={`flex h-[34px] w-[58px] shrink-0 cursor-pointer rounded-full p-1 transition-colors ${form.isGroupGift ? 'justify-end bg-signal' : 'justify-start bg-ink/15'}`}
             >
-              <span className="size-[26px] bg-ink" />
+              <span className="size-[26px] rounded-full bg-card shadow-[0_2px_0_rgb(0_0_0/.2)]" />
             </button>
           </div>
 
-          {add.isError && <p role="alert" className="bg-ink p-3 font-semibold text-paper">{t.error(add.error)}</p>}
+          {add.isError && <p role="alert" className="rounded-2xl bg-ink p-3 font-semibold text-paper">{t.error(add.error)}</p>}
         </div>
 
-        <div className="flex justify-end gap-3 border-t-2 border-ink px-7 py-5">
+        <div className="flex justify-end gap-3 border-t-2 border-ink/10 px-7 py-5">
           <button type="button" onClick={onClose} className="btn btn-outline">{t('cancel')}</button>
           <button className="btn btn-primary" disabled={add.isPending || upload.isPending}>{t(add.isPending ? 'adding' : 'addWishSubmit')}</button>
         </div>
