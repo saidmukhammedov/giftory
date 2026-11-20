@@ -6,15 +6,30 @@ import api from '../api';
 import { useAuth } from '../auth';
 import { useT } from '../i18n';
 import { Page, Header } from '../components/Layout';
-import { Plus } from '../components/Icons';
+import { Check, Chevron, Plus } from '../components/Icons';
 import { BirthdayBanner, isBirthdayToday } from '../components/Birthday';
 
 const OCCASIONS = ['Birthday', 'Wedding', 'New home', 'New baby', 'Graduation', 'Just because'];
 
-function NewListForm({ onCancel }) {
+const iso = (d) => d.toLocaleDateString('en-CA');
+const today = () => iso(new Date());
+const nextDate = (md) => {
+  const y = new Date().getFullYear();
+  return `${y}-${md}` >= today() ? `${y}-${md}` : `${y + 1}-${md}`;
+};
+const daysUntil = (date) => Math.round((new Date(`${date}T00:00`) - new Date(`${today()}T00:00`)) / 864e5);
+
+const TEMPLATES = [
+  { key: 'tplBirthday', occasion: 'Birthday', date: (u) => (u.birthday ? nextDate(u.birthday.slice(5, 10)) : '') },
+  { key: 'tplWedding', occasion: 'Wedding', date: () => '' },
+  { key: 'tplHome', occasion: 'New home', date: () => '' },
+  { key: 'tplNewYear', occasion: 'Just because', date: () => nextDate('12-31') },
+];
+
+function NewListForm({ onCancel, initial }) {
   const t = useT();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ title: '', occasion: 'Birthday', eventDate: '', note: '' });
+  const [form, setForm] = useState({ title: '', occasion: 'Birthday', eventDate: '', note: '', ...initial });
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const create = useMutation({
     mutationFn: () => api.post('/wishlists', { ...form, eventDate: form.eventDate || undefined }),
@@ -56,9 +71,10 @@ function NewListForm({ onCancel }) {
 export default function Dashboard() {
   const { user } = useAuth();
   const t = useT();
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(null);
   const newButton = useRef(null);
-  const cancel = () => { setCreating(false); requestAnimationFrame(() => newButton.current?.focus()); };
+  const cancel = () => { setCreating(null); requestAnimationFrame(() => newButton.current?.focus()); };
+  const start = (tpl) => setCreating(tpl ? { title: t(tpl.key), occasion: tpl.occasion, eventDate: tpl.date(user) } : {});
   const tgError = TELEGRAM_ERRORS[useSearchParams()[0].get('error')];
   const { data: lists, isLoading, isError, error } = useQuery({ queryKey: ['my-lists'], queryFn: () => api.get('/wishlists/mine').then((r) => r.data) });
 
@@ -71,21 +87,36 @@ export default function Dashboard() {
             <p className="text-lg text-mute">{t('hi', { name: user.name })}</p>
             <h1 className="display mt-2 text-[clamp(40px,5vw,72px)]">{t('yourLists')}</h1>
           </div>
-          {!creating && <button ref={newButton} className="btn btn-primary" onClick={() => setCreating(true)}><Plus size={18} /> {t('newList')}</button>}
+          {!creating && <button ref={newButton} className="btn btn-primary" onClick={() => start()}><Plus size={18} /> {t('newList')}</button>}
         </div>
 
         {lists?.filter(isBirthdayToday).slice(0, 1).map((l) => <BirthdayBanner key={l.id} name={user.name.split(' ')[0]} picked={l.reserved} />)}
         {tgError && <p role="alert" className="bg-ink p-4 font-semibold text-paper">{t(tgError)}</p>}
-        {creating && <NewListForm onCancel={cancel} />}
+        {creating && <NewListForm key={creating.title} initial={creating} onCancel={cancel} />}
         {isError && <p role="alert" className="bg-ink p-4 font-semibold text-paper">{t.error(error)}</p>}
         {isLoading && <p className="text-mute">{t('loadingLists')}</p>}
 
+        {lists && <Countdown lists={lists} />}
+
         {lists?.length === 0 && !creating && (
-          <div className="glass-card flex flex-col items-center gap-4 px-6 py-16 text-center">
-            <p className="display text-3xl">{t('noListsTitle')}</p>
-            <p className="max-w-md text-mute">{t('noListsText')}</p>
-            <button className="btn btn-primary" onClick={() => setCreating(true)}>{t('firstList')}</button>
-          </div>
+          <section aria-labelledby="templates" className="glass-card flex flex-col gap-6 p-7">
+            <div>
+              <h2 id="templates" className="display text-3xl">{t('noListsTitle')}</h2>
+              <p className="mt-2 max-w-xl text-mute">{t('templatesText')}</p>
+            </div>
+            <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr))]">
+              {TEMPLATES.map((tpl) => {
+                const date = tpl.date(user);
+                return (
+                  <button key={tpl.key} onClick={() => start(tpl)} className="tag-h group flex cursor-pointer flex-col items-start gap-1 border-2 border-ink bg-paper p-5 text-left hover:bg-ink hover:text-paper">
+                    <span className="display text-2xl">{t(tpl.key)}</span>
+                    <span className="text-sm text-mute group-hover:text-paper/70">{date ? t.date(date) : t('pickDateLater')}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <button className="btn btn-outline self-start" onClick={() => start()}>{t('fromScratch')}</button>
+          </section>
         )}
 
         <div className="grid gap-6 [grid-template-columns:repeat(auto-fill,minmax(min(380px,100%),1fr))]">
@@ -106,9 +137,71 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {lists && <GettingStarted lists={lists} onCreate={() => start(TEMPLATES[0])} />}
         <Upcoming />
       </main>
     </Page>
+  );
+}
+
+function Countdown({ lists }) {
+  const t = useT();
+  const next = lists
+    .filter((l) => l.eventDate && daysUntil(l.eventDate.slice(0, 10)) > 0)
+    .sort((a, b) => a.eventDate.localeCompare(b.eventDate))[0];
+  if (!next) return null;
+  const days = daysUntil(next.eventDate.slice(0, 10));
+  return (
+    <Link to={`/w/${next.slug}`} className="glass-dark group flex flex-wrap items-center gap-x-8 gap-y-4 p-7 no-underline">
+      <p className="display text-[clamp(64px,9vw,120px)] leading-none text-signal">{days}</p>
+      <div className="min-w-0 flex-1 break-words">
+        <p className="text-lg font-semibold">{t('daysUntil', { n: days })}</p>
+        <p className="display mt-1 text-[clamp(26px,3vw,40px)]">{next.title}</p>
+        <p className="mt-2 opacity-75">{next.total ? t('pickedOf', { p: next.reserved, t: next.total }) : t('noWishesYet')}</p>
+      </div>
+      <Chevron size={32} className="transition-transform group-hover:translate-x-1" />
+    </Link>
+  );
+}
+
+function GettingStarted({ lists, onCreate }) {
+  const t = useT();
+  const { user } = useAuth();
+  const first = lists[0];
+  let shared = false;
+  try { shared = localStorage.getItem('giftory_shared') === '1'; } catch { shared = false; }
+  const steps = [
+    { key: 'stepList', done: lists.length > 0, action: <button className="cursor-pointer font-semibold underline" onClick={onCreate}>{t('stepListGo')}</button> },
+    { key: 'stepWishes', done: lists.some((l) => l.total >= 3), action: first && <Link to={`/w/${first.slug}`} className="font-semibold underline">{t('stepWishesGo')}</Link> },
+    { key: 'stepShare', done: shared || lists.some((l) => l.reserved > 0), action: first && <Link to={`/w/${first.slug}`} className="font-semibold underline">{t('stepShareGo')}</Link> },
+    { key: 'stepBirthday', done: Boolean(user.birthday), action: <Link to="/profile" className="font-semibold underline">{t('stepBirthdayGo')}</Link> },
+  ];
+  const done = steps.filter((s) => s.done).length;
+  if (done === steps.length) return null;
+  return (
+    <section aria-labelledby="start" className="glass-card flex flex-col gap-5 p-7">
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 id="start" className="display text-3xl">{t('startTitle')}</h2>
+        <p className="font-semibold text-mute">{t('startProgress', { d: done, n: steps.length })}</p>
+      </div>
+      <div className="flex gap-1.5" aria-hidden="true">
+        {steps.map((s) => <span key={s.key} className={`h-2.5 flex-1 ${s.done ? 'bg-signal' : 'bg-ink/15'}`} />)}
+      </div>
+      <ol className="grid gap-3 md:grid-cols-2">
+        {steps.map((s) => (
+          <li key={s.key} className="flex items-start gap-3">
+            <span className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-full ${s.done ? 'bg-signal text-on-signal' : 'shadow-[inset_0_0_0_2px_var(--color-ink)]'}`}>
+              {s.done && <Check size={14} />}
+              <span className="sr-only">{t(s.done ? 'stepDone' : 'stepTodo')}</span>
+            </span>
+            <div>
+              <p className={`font-bold ${s.done ? 'text-mute line-through' : ''}`}>{t(s.key)}</p>
+              {!s.done && s.action}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 

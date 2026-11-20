@@ -306,7 +306,9 @@ function OwnerView({ wishlist, items }) {
   const removeList = useMutation({ mutationFn: () => api.delete(`/wishlists/${wishlist.id}`), onSuccess: () => navigate('/dashboard') });
 
   const [copied, setCopied] = useState('');
+  const markShared = () => { try { localStorage.setItem('giftory_shared', '1'); } catch { return; } };
   const copy = async () => {
+    markShared();
     try {
       await navigator.clipboard.writeText(url);
       setCopied('copied');
@@ -340,10 +342,10 @@ function OwnerView({ wishlist, items }) {
           <div className="flex flex-wrap gap-2.5">
             <input id="share" readOnly value={url} className="input min-w-0 flex-[1_1_200px] font-medium" onFocus={(e) => e.target.select()} />
             <button className="btn btn-primary" onClick={copy}>{t(copied || 'copyLink')}</button>
-            <a className="btn btn-outline" href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(wishlist.title)}`} target="_blank" rel="noreferrer">
+            <a className="btn btn-outline" href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(wishlist.title)}`} target="_blank" rel="noreferrer" onClick={markShared}>
               <Send size={18} /> Telegram
             </a>
-            <button className="btn btn-outline" onClick={() => setShowQr(true)}><Qr size={18} /> {t('qrCode')}</button>
+            <button className="btn btn-outline" onClick={() => { markShared(); setShowQr(true); }}><Qr size={18} /> {t('qrCode')}</button>
           </div>
         </div>
         <div className="glass-dark flex flex-col justify-center gap-4 p-7">
