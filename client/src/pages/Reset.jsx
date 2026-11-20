@@ -24,7 +24,7 @@ export default function Reset({ mode }) {
   const m = forgot ? send : reset;
 
   return (
-    <Page shapes={[['circle', 520, { right: -120, top: -140 }], ['square', 240, { left: -90, top: 300, rotate: '12deg' }]]}>
+    <Page>
       <div className="mx-auto flex min-h-screen max-w-[1240px] flex-col gap-8 px-4 pb-14 pt-7 sm:px-8">
         <header className="flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2.5 no-underline" aria-label={t('home')}>

@@ -7,7 +7,7 @@ export default function Legal({ doc }) {
   const sections = (LEGAL[lang] || LEGAL.en)[doc];
   const title = t(doc);
   return (
-    <Page shapes={[['circle', 420, { right: -140, top: 60 }]]}>
+    <Page>
       <Header />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1376px] px-4 pb-24 pt-14 outline-none sm:px-8">
         <article className="glass-card mx-auto flex max-w-3xl flex-col gap-8 p-7 sm:p-12">

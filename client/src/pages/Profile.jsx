@@ -45,7 +45,7 @@ export default function Profile() {
   const canDisconnect = user.email && user.hasPassword;
 
   return (
-    <Page shapes={[['circle', 460, { right: -140, top: 120 }], ['square', 300, { left: -80, top: 900, rotate: '12deg' }]]}>
+    <Page>
       <Header />
       <main id="main" tabIndex={-1} className="mx-auto flex max-w-3xl flex-col gap-6 px-4 pb-24 pt-12 outline-none sm:px-8">
         <div>

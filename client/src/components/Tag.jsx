@@ -1,5 +1,5 @@
-import { Bow, Gift } from './Icons';
-import { tileColor } from '../utils';
+import { Bow } from './Icons';
+import GiftArt from './GiftArt';
 
 export function Tag({ className = '', children }) {
   return (
@@ -22,8 +22,8 @@ export function Photo({ src, className = 'relative' }) {
 export function ItemTile({ item, index = 0, wrapped, hideImage, className = 'aspect-[4/3]' }) {
   const showPhoto = item.image && !hideImage;
   return (
-    <div className={`relative grid place-items-center overflow-hidden ${showPhoto ? '' : tileColor(index)} ${className}`}>
-      {showPhoto ? <Photo src={item.image} className="absolute inset-0" /> : <Gift size={60} />}
+    <div className={`relative grid place-items-center overflow-hidden ${showPhoto ? '' : 'bg-sheet'} ${className}`}>
+      {showPhoto ? <Photo src={item.image} className="absolute inset-0" /> : <GiftArt index={index} className="w-3/5 max-w-44" />}
       {wrapped && (
         <div className="frost">
           <Bow />

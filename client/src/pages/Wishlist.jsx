@@ -16,8 +16,7 @@ import { som } from '../utils';
 const today = () => new Date().toLocaleDateString('en-CA');
 const isPast = (w) => !!w.eventDate && w.eventDate < today();
 
-const SHAPES = [['circle', 460, { right: -120, top: -130 }], ['square', 320, { left: -80, top: 700, rotate: '14deg' }]];
-const PRIORITY = { high: ['prioHigh', 'bg-signal text-on-signal'], medium: ['prioMedium', 'bg-ink text-paper'] };
+const PRIORITY = { high: ['prioHigh', 'bg-signal text-on-signal'], medium: ['prioMedium', 'bg-sheet text-ink'] };
 const AMOUNTS = [100000, 250000, 500000];
 
 export default function Wishlist() {
@@ -26,7 +25,7 @@ export default function Wishlist() {
   const { data, isLoading, isError, error } = useQuery({ queryKey: ['wishlist', slug], queryFn: () => api.get(`/wishlists/${slug}`).then((r) => r.data) });
 
   return (
-    <Page shapes={SHAPES}>
+    <Page>
       <Header />
       {isLoading && <p className="mx-auto max-w-[1376px] px-8 py-24 text-mute">{t('opening')}</p>}
       {isError && (
@@ -128,10 +127,10 @@ function FriendView({ wishlist, items }) {
         wishlist={wishlist}
         aside={
           <div className="flex flex-[0_1_380px] flex-col gap-3">
-            <div className="glass-dark flex items-start gap-3.5 p-6">
-              <Lock size={26} className="mt-0.5 shrink-0 text-signal" />
-              <p>{t('secret', { name: wishlist.owner.name })}</p>
-            </div>
+            <p className="flex items-start gap-3 text-[15px] leading-snug text-mute">
+              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-signal text-on-signal"><Lock size={18} /></span>
+              <span className="pt-1">{t('secret', { name: wishlist.owner.name })}</span>
+            </p>
             {user?.id !== wishlist.owner.id && (
               <button id="follow" className={`btn ${following ? 'btn-outline' : 'btn-primary'}`} aria-pressed={following} disabled={act.isPending} onClick={() => run(follow)}>
                 <Bell size={18} /> {t(following ? 'following' : 'followBirthday', { name: ownerFirst })}
@@ -167,7 +166,7 @@ function FriendView({ wishlist, items }) {
             const amount = Math.min(amounts[item.id] || 250000, left(item));
             const named = `name-${item.id}`;
             return (
-              <Tag key={item.id} className={`[contain-intrinsic-size:auto_540px] [content-visibility:auto] ${takenByOther ? 'opacity-80' : ''}`}>
+              <Tag key={item.id} className={`${takenByOther ? 'opacity-80' : ''}`}>
                 <ItemTile item={item} index={index} wrapped={!item.isGroupGift && item.isReserved} />
                 <div className="flex flex-col gap-1.5">
                   <div className="flex flex-wrap gap-2">
@@ -348,18 +347,18 @@ function OwnerView({ wishlist, items }) {
             <button className="btn btn-outline" onClick={() => { markShared(); setShowQr(true); }}><Qr size={18} /> {t('qrCode')}</button>
           </div>
         </div>
-        <div className="glass-dark flex flex-col justify-center gap-4 p-7">
+        <div className="flex flex-col justify-center gap-4 border-y-2 border-ink py-6">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <span className="display text-3xl">{t('pickedOf', { p: picked, t: items.length })}</span>
-            <span className="text-paper/70">{t('namesHidden')}</span>
+            <span className="text-mute">{t('namesHidden')}</span>
           </div>
           <div className="flex gap-1.5" aria-hidden="true">
-            {items.map((i, n) => <span key={i.id} className={`h-2.5 flex-1 ${n < picked ? 'bg-signal' : 'bg-paper/20'}`} />)}
+            {items.map((i, n) => <span key={i.id} className={`h-2.5 flex-1 ${n < picked ? 'bg-signal' : 'bg-ink/15'}`} />)}
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1376px] px-4 pb-10 sm:px-8">
+      {(past || wishlist.thanks || items.some((i) => i.received)) && <section className="mx-auto max-w-[1376px] px-4 pb-10 sm:px-8">
         <form className="glass-card flex flex-col gap-3 p-7" onSubmit={(e) => { e.preventDefault(); saveThanks.mutate(); }}>
           <label htmlFor="thanks" className="font-bold">{t('thanksTitle')}</label>
           <span id="thanks-hint" className="-mt-1 text-sm text-mute">{t('thanksHint')}</span>
@@ -370,7 +369,7 @@ function OwnerView({ wishlist, items }) {
             {saveThanks.isError && <span role="alert" className="font-semibold">{t.error(saveThanks.error)}</span>}
           </div>
         </form>
-      </section>
+      </section>}
 
       <section className="mx-auto max-w-[1376px] px-4 pb-24 sm:px-8">
         <div className="grid gap-x-6 gap-y-8 [grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr))]">
@@ -385,7 +384,7 @@ function OwnerView({ wishlist, items }) {
             const given = item.isReserved || (item.isGroupGift && item.funded > 0);
             const pct = Math.round((item.funded / item.price) * 100) || 0;
             return (
-              <Tag key={item.id} className="[contain-intrinsic-size:auto_540px] [content-visibility:auto] pb-3.5">
+              <Tag key={item.id} className="pb-3.5">
                 <ItemTile item={item} index={index} wrapped={hidden} hideImage={hidden} />
                 {hidden ? (
                   <div>

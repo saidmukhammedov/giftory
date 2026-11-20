@@ -12,14 +12,15 @@ export default function Landing() {
   const steps = [['step1', 'step1Text'], ['step2', 'step2Text'], ['step3', 'step3Text']];
 
   return (
-    <Page shapes={[['circle', 600, { right: -110, top: 90 }], ['circle', 520, { right: -120, top: 1800 }]]}>
+    <Page>
       <Header />
 
       <main id="main" tabIndex={-1} className="outline-none">
       <section className="relative mx-auto flex max-w-[1376px] flex-col px-4 pb-24 pt-14 sm:px-8 lg:min-h-[820px]">
         <h1 className={`display relative z-10 max-w-[1040px] leading-[.86] lg:max-w-[780px] ${lang === 'ru' ? 'text-[clamp(40px,6vw,90px)]' : 'text-[clamp(52px,8.6vw,128px)]'}`}>{t('heroTitle')}</h1>
 
-        <div className="relative z-0 order-last mt-14 h-[640px] sm:h-[480px] lg:absolute lg:order-none lg:right-8 lg:top-[90px] lg:mt-0 lg:h-[640px] lg:w-[560px]" role="img" aria-label={t('demoAria')}>
+        <div className="relative z-0 order-last mt-14 h-[700px] bg-signal sm:h-[560px] lg:absolute lg:order-none lg:right-8 lg:top-10 lg:mt-0 lg:h-[720px] lg:w-[600px]" role="img" aria-label={t('demoAria')}>
+          <div className="absolute inset-6 sm:inset-10">
           <div className="absolute left-0 top-0 w-[200px] -rotate-6 sm:w-[280px] lg:top-[150px]">
             <span className="mb-3 ml-2 inline-block bg-ink px-2.5 py-1 text-[13px] font-bold text-paper">{t('friendSees')}</span>
             <Tag>
@@ -40,6 +41,7 @@ export default function Landing() {
                 <p className="text-mute">{t('findOut')}</p>
               </div>
             </Tag>
+          </div>
           </div>
         </div>
 
@@ -77,9 +79,9 @@ export default function Landing() {
             <h2 className="display text-[clamp(38px,4.8vw,72px)]">{t('groupTitle')}</h2>
             <p className="max-w-[27em] text-lg leading-relaxed">{t('groupText')}</p>
           </div>
-          <div className="glass-dark flex flex-col gap-6 p-8" role="img" aria-label={t('groupAria')}>
+          <div className="pop flex -rotate-2 flex-col gap-6 p-8" role="img" aria-label={t('groupAria')}>
             <div className="flex items-center gap-4">
-              <ItemTile item={{}} index={0} className="size-20 shrink-0" />
+              <ItemTile item={{}} index={0} className="size-24 shrink-0" />
               <div>
                 <span className="bg-signal px-2.5 py-1 text-[13px] font-bold text-on-signal">{t('groupGift')}</span>
                 <p className="mt-2 text-2xl font-bold">{t('espresso')}</p>
@@ -88,11 +90,11 @@ export default function Landing() {
             <div>
               <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3">
                 <span className="display text-4xl">2 900 000</span>
-                <span className="text-paper/70">{t('ofTotal', { total: '4 800 000' })}</span>
+                <span className="text-mute">{t('ofTotal', { total: '4 800 000' })}</span>
               </div>
-              <div className="bar bg-paper/10 shadow-[inset_0_0_0_2px_var(--color-paper)]"><span style={{ width: '60%' }} /></div>
+              <div className="bar"><span style={{ width: '60%' }} /></div>
             </div>
-            <p className="text-paper/70">{t('chipped', { n: 3 })}</p>
+            <p className="text-mute">{t('chipped', { n: 3 })}</p>
           </div>
         </div>
       </section>

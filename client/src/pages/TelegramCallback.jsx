@@ -25,7 +25,7 @@ export default function TelegramCallback() {
   }, [navigate, signIn]);
 
   return (
-    <Page shapes={[['circle', 520, { right: -120, top: 80 }]]}>
+    <Page>
       <p className="display mx-auto max-w-[1376px] px-6 py-32 text-4xl">{t('signingIn')}</p>
     </Page>
   );

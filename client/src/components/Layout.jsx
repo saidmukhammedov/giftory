@@ -6,17 +6,9 @@ import { Chevron, Close, Logo, Menu, Moon, Send, Sun } from './Icons';
 import { connectTelegram, useTelegramEnabled } from '../telegram';
 import Crowd from './Crowd';
 
-export function Page({ shapes = [], children }) {
+export function Page({ children }) {
   return (
     <div className="relative isolate min-h-screen overflow-clip">
-      {shapes.map(([kind, size, pos], i) => (
-        <span
-          key={i}
-          aria-hidden="true"
-          className={`pointer-events-none absolute -z-10 ${i > 0 ? 'hidden md:block' : ''} ${kind === 'circle' ? 'rounded-full bg-signal' : kind === 'dot' ? 'rounded-full bg-ink' : 'bg-signal'}`}
-          style={{ width: `min(${size}px, 56vw)`, height: `min(${size}px, 56vw)`, ...pos }}
-        />
-      ))}
       {children}
       <Footer />
     </div>

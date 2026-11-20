@@ -12,10 +12,11 @@
   --color-peach: #FFB59A;
   --color-stone: #D8D8D0;
   --color-mute: #4A4A45;
-  --color-glass: rgb(255 255 255 / .44);
-  --color-card: rgb(255 255 255 / .72);
-  --color-field: rgb(255 255 255 / .6);
-  --color-edge: rgb(255 255 255 / .9);
+  --color-glass: #FBFBF8;
+  --color-card: #FBFBF8;
+  --color-field: #FBFBF8;
+  --color-edge: rgb(0 0 0 / .07);
+  --color-sheet: #EAEAE3;
   --color-film: rgb(255 255 255 / .5);
   --font-sans: "Archivo Variable", "Roboto Flex Variable", system-ui, sans-serif;
 }
@@ -28,10 +29,11 @@
     --color-stone: #2D2D29;
     --color-mute: #A9A9A0;
     --color-signal-deep: #FF4D00;
-    --color-glass: rgb(30 30 27 / .62);
-    --color-card: rgb(30 30 27 / .8);
-    --color-field: rgb(255 255 255 / .06);
-    --color-edge: rgb(255 255 255 / .16);
+    --color-glass: #1F1F1C;
+    --color-card: #1F1F1C;
+    --color-field: #1F1F1C;
+    --color-edge: rgb(255 255 255 / .08);
+    --color-sheet: #2A2A26;
     --color-film: rgb(22 22 20 / .55);
     color-scheme: dark;
   }
@@ -47,17 +49,15 @@
 
   .glass {
     background: var(--color-glass);
-    backdrop-filter: blur(22px) saturate(140%);
-    box-shadow: inset 0 0 0 1.5px var(--color-edge), 0 24px 48px -26px rgb(0 0 0 / .35);
+    box-shadow: inset 0 0 0 1px var(--color-edge), 0 18px 36px -24px rgb(0 0 0 / .28);
   }
   .glass-card {
     background: var(--color-card);
-    backdrop-filter: blur(12px);
-    box-shadow: inset 0 0 0 1.5px var(--color-edge), 0 24px 48px -26px rgb(0 0 0 / .35);
+    box-shadow: inset 0 0 0 1px var(--color-edge), 0 14px 30px -22px rgb(0 0 0 / .3);
   }
   .edge { box-shadow: inset 0 0 0 2px var(--color-ink); }
   .pop { background: var(--color-paper); box-shadow: inset 0 0 0 2px var(--color-ink), 0 24px 48px -20px rgb(0 0 0 / .45); }
-  .glass-dark { background: color-mix(in srgb, var(--color-ink) 88%, transparent); color: var(--color-paper); backdrop-filter: blur(18px); }
+  .glass-dark { background: var(--color-ink); color: var(--color-paper); }
 
   .tag-v { clip-path: polygon(26px 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%, 0 26px); }
   .tag-h { clip-path: polygon(26px 0, 100% 0, 100% 100%, 26px 100%, 0 calc(100% - 26px), 0 26px); }
@@ -84,7 +84,7 @@
   .btn-primary:hover:not(:disabled) { background: var(--color-ink); color: var(--color-paper); }
   .btn-telegram { background: var(--color-telegram); color: #000; }
   .btn-telegram:hover { background: var(--color-ink); color: var(--color-paper); }
-  .btn-outline { background: var(--color-field); backdrop-filter: blur(16px); box-shadow: inset 0 0 0 2px var(--color-ink); color: var(--color-ink); }
+  .btn-outline { background: transparent; box-shadow: inset 0 0 0 2px var(--color-ink); color: var(--color-ink); }
   .btn-outline:hover:not(:disabled) { background: var(--color-ink); color: var(--color-paper); }
 
   .chip { min-height: 44px; padding: 0 1.1rem; font-weight: 600; background: var(--color-field); box-shadow: inset 0 0 0 2px var(--color-ink); cursor: pointer; }
@@ -112,8 +112,8 @@
 @keyframes wrap-in { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
 @keyframes fade-in { from { opacity: 0; } }
 
-.confetti { animation: confetti-in .7s cubic-bezier(.2, 1.4, .4, 1) both; }
-.bow-pop { animation: bow-pop .6s cubic-bezier(.2, 1.6, .4, 1) .2s both; }
+.confetti { animation: confetti-in .7s cubic-bezier(.16, 1, .3, 1) both; }
+.bow-pop { animation: bow-pop .6s cubic-bezier(.16, 1, .3, 1) .2s both; }
 @keyframes confetti-in { from { opacity: 0; transform: translateY(-24px) scale(.4); } }
 @keyframes bow-pop { from { opacity: 0; transform: scale(.3) rotate(-25deg); } }
 
@@ -123,7 +123,7 @@
 .crowd-near { translate: calc(var(--mx, 0) * -32px) 0; }
 .crowd-word { position: absolute; inset: 0 0 36%; display: grid; place-items: center; white-space: nowrap; font-size: min(11vw, 160px); color: color-mix(in srgb, var(--color-ink) 10%, var(--color-paper)); }
 .crowd-word > span > span { display: inline-block; opacity: 0; }
-.crowd-seen .crowd-word > span > span { animation: rise .9s cubic-bezier(.2, 1.3, .4, 1) calc(var(--i) * 80ms + .2s) both, hop 7s ease-in-out calc(var(--i) * 90ms + 2s) infinite; }
+.crowd-seen .crowd-word > span > span { animation: rise .9s cubic-bezier(.16, 1, .3, 1) calc(var(--i) * 80ms + .2s) both, hop 7s ease-in-out calc(var(--i) * 90ms + 2s) infinite; }
 .walker { position: absolute; left: 0; width: 100%; bottom: var(--b); height: var(--h); pointer-events: none; }
 .walker, .walker-body { animation: var(--walk); will-change: transform; }
 .walker-body { position: absolute; right: 100%; height: 100%; }

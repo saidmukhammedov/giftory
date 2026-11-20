@@ -11,7 +11,7 @@ export default function Reserved() {
   const { data, isLoading, isError, error } = useQuery({ queryKey: ['reserved'], queryFn: () => api.get('/items/reserved/mine').then((r) => r.data) });
 
   return (
-    <Page shapes={[['circle', 460, { right: -140, top: 140 }], ['square', 280, { left: -60, top: 700, rotate: '10deg' }]]}>
+    <Page>
       <Header />
       <main id="main" tabIndex={-1} className="outline-none mx-auto flex max-w-[1376px] flex-col gap-8 px-4 pb-24 pt-12 sm:px-8">
         <div>

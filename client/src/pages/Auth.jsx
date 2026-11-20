@@ -32,7 +32,7 @@ export default function Auth({ mode }) {
   const other = `${signup ? '/login' : '/signup'}${next !== '/dashboard' ? `?next=${encodeURIComponent(next)}` : ''}`;
 
   return (
-    <Page shapes={[['circle', 600, { right: -100, top: -120 }], ['dot', 300, { left: '46%', bottom: -140 }], ['square', 260, { left: -100, top: 160, rotate: '12deg' }]]}>
+    <Page>
       <div className="mx-auto flex min-h-screen max-w-[1240px] flex-col gap-8 px-4 pb-14 pt-7 sm:px-8">
         <header className="flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2.5 no-underline" aria-label={t('home')}>

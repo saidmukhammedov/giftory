@@ -7,6 +7,7 @@ import { useAuth } from '../auth';
 import { useT } from '../i18n';
 import { Page, Header } from '../components/Layout';
 import { Check, Chevron, Plus } from '../components/Icons';
+import GiftArt from '../components/GiftArt';
 import { BirthdayBanner, isBirthdayToday } from '../components/Birthday';
 
 const OCCASIONS = ['Birthday', 'Wedding', 'New home', 'New baby', 'Graduation', 'Just because'];
@@ -79,13 +80,13 @@ export default function Dashboard() {
   const { data: lists, isLoading, isError, error } = useQuery({ queryKey: ['my-lists'], queryFn: () => api.get('/wishlists/mine').then((r) => r.data) });
 
   return (
-    <Page shapes={[['circle', 480, { right: -140, top: 160 }], ['square', 300, { left: -60, top: 760, rotate: '-10deg' }]]}>
+    <Page>
       <Header />
       <main id="main" tabIndex={-1} className="mx-auto flex max-w-[1376px] flex-col gap-8 px-4 pb-24 pt-12 outline-none sm:px-8">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="text-lg text-mute">{t('hi', { name: user.name })}</p>
-            <h1 className="display mt-2 text-[clamp(40px,5vw,72px)]">{t('yourLists')}</h1>
+            <p className="text-lg text-mute">{t('hi', { name: user.name.split(' ')[0] })}</p>
+            <h1 className="display mt-2 text-[clamp(38px,4.4vw,60px)]">{t('yourLists')}</h1>
           </div>
           {!creating && <button ref={newButton} className="btn btn-primary" onClick={() => start()}><Plus size={18} /> {t('newList')}</button>}
         </div>
@@ -123,7 +124,8 @@ export default function Dashboard() {
           {lists?.map((l) => (
             <Link key={l.id} to={`/w/${l.slug}`} className="glass-card tag-h group relative flex flex-col gap-4 py-7 pl-16 pr-7 no-underline">
               <span className="absolute left-5 top-1/2 size-3.5 -translate-y-1/2 rounded-full bg-paper shadow-[0_0_0_2px_var(--color-ink)]" />
-              <div>
+              <GiftArt index={lists.indexOf(l)} className="absolute right-4 top-5 w-20 transition-transform duration-300 group-hover:-translate-y-1 group-hover:rotate-3" />
+              <div className="pr-20">
                 <p className="text-sm font-bold text-mute">{[l.occasion && t.occasion(l.occasion), t.date(l.eventDate)].filter(Boolean).join(', ')}</p>
                 <h2 className="display mt-1 text-3xl group-hover:text-signal">{l.title}</h2>
               </div>
@@ -152,12 +154,15 @@ function Countdown({ lists }) {
   if (!next) return null;
   const days = daysUntil(next.eventDate.slice(0, 10));
   return (
-    <Link to={`/w/${next.slug}`} className="glass-dark group flex flex-wrap items-center gap-x-8 gap-y-4 p-7 no-underline">
-      <p className="display text-[clamp(64px,9vw,120px)] leading-none text-signal">{days}</p>
-      <div className="min-w-0 flex-1 break-words">
-        <p className="text-lg font-semibold">{t('daysUntil', { n: days })}</p>
-        <p className="display mt-1 text-[clamp(26px,3vw,40px)]">{next.title}</p>
-        <p className="mt-2 opacity-75">{next.total ? t('pickedOf', { p: next.reserved, t: next.total }) : t('noWishesYet')}</p>
+    <Link to={`/w/${next.slug}`} className="group grid grid-cols-[auto_1fr_auto] items-center gap-x-6 gap-y-3 border-y-2 border-ink py-6 no-underline sm:gap-x-10">
+      <p className="display text-[clamp(72px,10vw,136px)] leading-[.8] text-signal">{days}</p>
+      <div className="min-w-0 break-words">
+        <p className="text-lg text-mute">{t('daysUntil', { n: days })}</p>
+        <p className="display mt-1 text-[clamp(26px,3vw,42px)] group-hover:text-signal-deep">{next.title}</p>
+        <div className="mt-3 flex max-w-md gap-1" aria-hidden="true">
+          {Array.from({ length: Math.max(next.total, 1) }, (_, i) => <span key={i} className={`h-2 flex-1 ${i < next.reserved ? 'bg-signal' : 'bg-ink/15'}`} />)}
+        </div>
+        <p className="mt-2 font-semibold">{next.total ? t('pickedOf', { p: next.reserved, t: next.total }) : t('noWishesYet')}</p>
       </div>
       <Chevron size={32} className="transition-transform group-hover:translate-x-1" />
     </Link>
