@@ -156,18 +156,19 @@ function Countdown({ lists }) {
   if (!next) return null;
   const days = daysUntil(next.eventDate.slice(0, 10));
   return (
-    <Link to={`/w/${next.slug}`} className="group relative grid grid-cols-[auto_1fr_auto] items-center gap-x-6 gap-y-3 overflow-hidden rounded-[32px] bg-cobalt p-7 text-[#F4F1EA] no-underline shadow-[0_6px_0_#142F8F,0_30px_50px_-30px_rgb(35_72_200/.7)] transition-transform hover:-translate-y-1 sm:gap-x-10 sm:p-10">
-      <p className="display text-[clamp(72px,10vw,136px)] leading-[.8] text-sun">{days}</p>
-      <div className="min-w-0 break-words">
-        <p className="text-lg text-[#D5DCF7]">{t('daysUntil', { n: days })}</p>
-        <p className="display mt-1.5 text-[clamp(24px,3vw,40px)]">{next.title}</p>
+    <Link to={`/w/${next.slug}`} className="group relative grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-4 overflow-hidden rounded-[32px] bg-[linear-gradient(135deg,#3463FF,#2D5BFF_45%,#1F45E0)] p-6 text-[#F4F1EA] no-underline shadow-[0_6px_0_#1A3CC4,0_30px_50px_-30px_rgb(45_91_255/.8)] transition-transform hover:-translate-y-1 sm:grid-cols-[auto_1fr_auto] sm:gap-x-10 sm:p-10">
+      <p className="display text-[64px] leading-[.8] text-sun sm:text-[clamp(72px,10vw,136px)]">{days}</p>
+      <div className="col-span-2 row-start-2 min-w-0 break-words sm:col-span-1 sm:col-start-2 sm:row-start-1">
+        <p className="text-white sm:text-lg">{t('daysUntil', { n: days })}</p>
+        <p className="display mt-1.5 text-[clamp(24px,3vw,40px)] [text-wrap:balance]">{next.title}</p>
         <div className="mt-4 flex max-w-md gap-1.5" aria-hidden="true">
           {Array.from({ length: Math.max(next.total, 1) }, (_, i) => <span key={i} className={`seg ${i < next.reserved ? '!bg-sun' : '!bg-white/25'}`} />)}
         </div>
         <p className="mt-2.5 font-semibold">{next.total ? t('pickedOf', { p: next.reserved, t: next.total }) : t('noWishesYet')}</p>
       </div>
-      <div className="flex items-center gap-2">
-        <Gift3D size={90} colors={['var(--color-sun)', 'var(--color-signal)']} lift className="hidden md:block" />
+      <div className="col-start-2 row-start-1 flex items-center gap-1 sm:col-start-3">
+        <Gift3D size={54} colors={['var(--color-sun)', 'var(--color-signal)']} lift className="sm:hidden" />
+        <Gift3D size={90} colors={['var(--color-sun)', 'var(--color-signal)']} lift className="hidden sm:block" />
         <Chevron size={32} className="transition-transform group-hover:translate-x-1" />
       </div>
     </Link>

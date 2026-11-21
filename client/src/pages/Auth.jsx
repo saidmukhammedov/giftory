@@ -103,7 +103,7 @@ export default function Auth({ mode }) {
             <div className="relative">
               <Gift3D size={190} colors={GIFT_COLORS[1]} />
               <Gift3D size={92} colors={GIFT_COLORS[0]} className="absolute -left-28 bottom-0" />
-              <Gift3D size={70} colors={GIFT_COLORS[2]} className="absolute -right-20 bottom-3" />
+              <Gift3D size={70} colors={GIFT_COLORS[3]} className="absolute -right-20 bottom-3" />
             </div>
           </div>
         </main>

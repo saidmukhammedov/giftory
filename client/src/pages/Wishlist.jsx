@@ -16,7 +16,7 @@ import { som } from '../utils';
 const today = () => new Date().toLocaleDateString('en-CA');
 const isPast = (w) => !!w.eventDate && w.eventDate < today();
 
-const PRIORITY = { high: ['prioHigh', 'bg-signal text-on-signal'], medium: ['prioMedium', 'bg-sheet text-ink'] };
+const PRIORITY = { high: ['prioHigh', 'bg-signal text-on-signal'], medium: ['prioMedium', 'bg-mint text-[#17171A]'] };
 const AMOUNTS = [100000, 250000, 500000];
 
 export default function Wishlist() {

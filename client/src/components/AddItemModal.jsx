@@ -76,19 +76,6 @@ export default function AddItemModal({ list, onClose }) {
         </div>
 
         <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-7 py-6">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="item-link" className="font-bold">{t('productLink')} <span className="font-normal text-mute">{t('optional')}</span></label>
-            <span id="item-link-hint" className="-mt-1 text-sm text-mute">{t('productLinkHint')}</span>
-            <div className="flex gap-2">
-              <input id="item-link" aria-describedby="item-link-hint" className="input min-w-0 flex-1" type="url" value={form.link} onChange={set('link')} placeholder="https://uzum.uz/…" />
-              <button type="button" className="btn btn-outline px-4" disabled={!/^https?:\/\/[^/]+\.[^/]+/.test(form.link) || fill.isPending} onClick={() => fill.mutate()}>
-                <Wand size={18} /> {t(fill.isPending ? 'filling' : 'fillIn')}
-              </button>
-            </div>
-            {fill.isError && <p role="alert" className="rounded-2xl bg-ink p-3 text-sm font-semibold text-paper">{t.error(fill.error)}</p>}
-            {fill.isSuccess && <p role="status" className="text-sm font-semibold">{t('filled')}</p>}
-          </div>
-
           <fieldset className="flex flex-col gap-2.5">
             <legend className="mb-2 font-bold">{t('photo')} <span className="font-normal text-mute">{t('optional')}</span></legend>
 
@@ -150,6 +137,19 @@ export default function AddItemModal({ list, onClose }) {
             <span>{t('itemNote')} <span className="font-normal text-mute">{t('optional')}</span></span>
             <textarea className="input min-h-24 py-3 font-normal" value={form.note} onChange={set('note')} placeholder={t('itemNotePh')} />
           </label>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="item-link" className="font-bold">{t('productLink')} <span className="font-normal text-mute">{t('optional')}</span></label>
+            <span id="item-link-hint" className="-mt-1 text-sm text-mute">{t('productLinkHint')}</span>
+            <div className="flex gap-2">
+              <input id="item-link" aria-describedby="item-link-hint" className="input min-w-0 flex-1" type="url" value={form.link} onChange={set('link')} placeholder="https://uzum.uz/…" />
+              <button type="button" className="btn btn-outline px-4" disabled={!/^https?:\/\/[^/]+\.[^/]+/.test(form.link) || fill.isPending} onClick={() => fill.mutate()}>
+                <Wand size={18} /> {t(fill.isPending ? 'filling' : 'fillIn')}
+              </button>
+            </div>
+            {fill.isError && <p role="alert" className="rounded-2xl bg-ink p-3 text-sm font-semibold text-paper">{t.error(fill.error)}</p>}
+            {fill.isSuccess && <p role="status" className="text-sm font-semibold">{t('filled')}</p>}
+          </div>
 
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-2 font-bold">{t('howMuch')}</legend>

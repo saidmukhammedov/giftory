@@ -3,15 +3,15 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-const COL = { orange: 0xff4d00, cobalt: 0x2348c8, ink: 0x17171a, paper: 0xf4f1ea, mint: 0x9fd8c4, sun: 0xffc533 };
-const CARD_COLORS = [['#2348C8', '#F4F1EA'], ['#F4F1EA', '#17171A'], ['#FFC533', '#17171A'], ['#9FD8C4', '#17171A']];
+const COL = { orange: 0xff4d00, cobalt: 0x2d5bff, ink: 0x17171a, paper: 0xf4f1ea, mint: 0x6fe3bf, sun: 0xffd233, pink: 0xff5c93, lime: 0xb6f04a };
+const CARD_COLORS = [['#2D5BFF', '#F4F1EA'], ['#FF5C93', '#17171A'], ['#FFD233', '#17171A'], ['#6FE3BF', '#17171A']];
 const CROWD = [
   [{ w: 1.1, h: 1.3, d: 1.1, color: COL.cobalt, ribbon: COL.sun }, [-2.6, 0, 0.6], 0.5],
-  [{ w: 0.8, h: 0.7, d: 0.8, color: COL.paper, ribbon: COL.orange }, [-1.75, 0, 1.75], -0.3],
+  [{ w: 0.8, h: 0.7, d: 0.8, color: COL.pink, ribbon: COL.sun }, [-1.75, 0, 1.75], -0.3],
   [{ w: 1.3, h: 0.9, d: 1, color: COL.ink, ribbon: COL.orange }, [2.7, 0, 0.2], -0.6],
   [{ w: 0.7, h: 1.1, d: 0.7, color: COL.mint, ribbon: COL.ink }, [2.05, 0, 1.75], 0.4],
   [{ w: 0.6, h: 0.55, d: 0.6, color: COL.sun, ribbon: COL.cobalt }, [-2.6, 1.3, 0.6], 0.9],
-  [{ w: 1, h: 0.8, d: 1, color: COL.paper, ribbon: COL.cobalt }, [0.6, 0, -2.4], 0.2],
+  [{ w: 1, h: 0.8, d: 1, color: COL.lime, ribbon: COL.cobalt }, [0.6, 0, -2.4], 0.2],
 ];
 
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));

@@ -2,7 +2,9 @@ export const GIFT_COLORS = [
   ['var(--color-cobalt)', 'var(--color-sun)'],
   ['var(--color-signal)', '#F8F7F3'],
   ['var(--color-mint)', '#17171A'],
+  ['var(--color-pink)', 'var(--color-sun)'],
   ['var(--color-sun)', 'var(--color-cobalt)'],
+  ['var(--color-lime)', '#17171A'],
 ];
 
 export const TAKEN = ['#17171A', 'var(--color-signal)'];

@@ -62,7 +62,7 @@ export default function Landing() {
           <div className="mx-auto grid max-w-[1376px] items-center gap-14 px-4 py-24 sm:px-8 sm:py-32 md:grid-cols-[1.2fr_1fr]">
             <div>
               <h2 className="display max-w-[12ch] text-[clamp(40px,5.6vw,92px)] [text-wrap:balance]">{t('groupTitle')}</h2>
-              <p className="mt-6 max-w-[40ch] text-lg leading-relaxed text-[#D5DCF7]">{t('groupText')}</p>
+              <p className="mt-6 max-w-[40ch] text-lg leading-relaxed text-white">{t('groupText')}</p>
             </div>
             <div className="jar justify-self-center" role="img" aria-label={t('groupAria')}>
               <b style={{ height: '60%' }} />
